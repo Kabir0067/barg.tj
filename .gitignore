@@ -1,0 +1,53 @@
+# ======================================================
+#  Barg.tj — root .gitignore (covers Back-End + Front-End)
+# ======================================================
+
+# ---------- Secrets / environment ----------
+.env
+.env.*
+!.env.example
+
+# ---------- Python / Django (Back-End) ----------
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.Python
+.venv/
+venv/
+env/
+*.sqlite3
+db.sqlite3
+Back-End/staticfiles/
+Back-End/static_collected/
+Back-End/media/*
+!Back-End/media/.gitkeep
+
+# ---------- Node / Next.js (Front-End) ----------
+node_modules/
+.next/
+out/
+build/
+.turbo/
+*.tsbuildinfo
+next-env.d.ts
+.vercel
+
+# ---------- Logs ----------
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# ---------- Local tooling ----------
+.claude/settings.local.json
+
+# ---------- Editors / OS ----------
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+desktop.ini

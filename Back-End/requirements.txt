@@ -1,0 +1,17 @@
+# Barg.tj — Back-End dependencies (Python 3.12)
+# Install:  pip install -r requirements.txt
+
+Django==6.0.5
+djangorestframework==3.17.1
+djangorestframework_simplejwt==5.5.1
+django-cors-headers==4.9.0
+drf-spectacular==0.29.0
+python-dotenv==1.0.1
+Pillow==12.2.0
+requests==2.34.2
+PyJWT==2.13.0
+PyYAML==6.0.3
+
+# --- Production server (install on the deploy host) ---
+gunicorn==23.0.0
+whitenoise==6.8.2

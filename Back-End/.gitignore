@@ -1,0 +1,27 @@
+# Back-End (Django) — local files that must never be committed
+
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+
+# Virtual environment
+.venv/
+venv/
+env/
+
+# Database (contains customer data — keep private)
+*.sqlite3
+db.sqlite3
+
+# Collected static / uploaded media
+staticfiles/
+static_collected/
+media/*
+!media/.gitkeep
