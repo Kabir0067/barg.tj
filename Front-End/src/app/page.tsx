@@ -1,18 +1,19 @@
 "use client";
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { ArrowRight, Truck, ShieldCheck, Phone } from 'lucide-react';
+import { ArrowRight, Truck, ShieldCheck, Phone, ShoppingCart } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
+import { useCart } from '@/context/CartContext';
 import { apiClient, mediaUrl, categoryImage } from '@/lib/apiClient';
 import styles from './page.module.css';
 
 export default function Home() {
   const { lang, t } = useLanguage();
+  const { addToCart } = useCart();
   const [categories, setCategories] = useState<any[]>([]);
   const [products, setProducts] = useState<any[]>([]);
 
   useEffect(() => {
-    // Fetch categories and featured products
     apiClient.get('/categories/')
       .then(res => setCategories(res.data.results || res.data || []))
       .catch(console.error);
@@ -47,19 +48,25 @@ export default function Home() {
       {/* === FEATURES === */}
       <section className={`container ${styles.features}`}>
         <div className={styles.featureCard}>
-          <div className={styles.featureIcon}><Truck size={28} /></div>
-          <h3>{t('home_feat_1_title')}</h3>
-          <p>{t('home_feat_1_desc')}</p>
+          <div className={styles.featureIcon}><Truck size={26} /></div>
+          <div className={styles.featureBody}>
+            <h3>{t('home_feat_1_title')}</h3>
+            <p>{t('home_feat_1_desc')}</p>
+          </div>
         </div>
         <div className={styles.featureCard}>
-          <div className={styles.featureIcon}><ShieldCheck size={28} /></div>
-          <h3>{t('home_feat_2_title')}</h3>
-          <p>{t('home_feat_2_desc')}</p>
+          <div className={styles.featureIcon}><ShieldCheck size={26} /></div>
+          <div className={styles.featureBody}>
+            <h3>{t('home_feat_2_title')}</h3>
+            <p>{t('home_feat_2_desc')}</p>
+          </div>
         </div>
         <div className={styles.featureCard}>
-          <div className={styles.featureIcon}><Phone size={28} /></div>
-          <h3>{t('home_feat_3_title')}</h3>
-          <p>{t('home_feat_3_desc')}</p>
+          <div className={styles.featureIcon}><Phone size={26} /></div>
+          <div className={styles.featureBody}>
+            <h3>{t('home_feat_3_title')}</h3>
+            <p>{t('home_feat_3_desc')}</p>
+          </div>
         </div>
       </section>
 
@@ -85,10 +92,9 @@ export default function Home() {
                   />
                   <span className={styles.catOverlay} />
                   <span className={styles.catContent}>
-                    {cat.icon && <span className={styles.catEmoji}>{cat.icon}</span>}
                     <span className={styles.catName}>{catName}</span>
                   </span>
-                  <span className={styles.catArrow}><ArrowRight size={18} /></span>
+                  <span className={styles.catArrow}><ArrowRight size={16} /></span>
                 </Link>
               );
             })}
@@ -109,22 +115,35 @@ export default function Home() {
             {products.slice(0, 8).map((p: any) => {
               const name = lang === 'tj' ? p.name_tj : p.name_ru;
               return (
-                <Link key={p.id} href={`/products/${p.slug}`} className={styles.prodCard}>
-                  <div className={styles.prodImg}>
-                    {p.image ? (
-                      <img src={mediaUrl(p.image)} alt={name} />
-                    ) : (
-                      <div className={styles.noImg}>{t('prod_no_img')}</div>
-                    )}
-                  </div>
+                <div key={p.id} className={styles.prodCard}>
+                  <Link href={`/products/${p.slug}`} className={styles.prodImgLink}>
+                    <div className={styles.prodImg}>
+                      {p.image ? (
+                        <img src={mediaUrl(p.image)} alt={name} loading="lazy" />
+                      ) : (
+                        <div className={styles.noImg}>{t('prod_no_img')}</div>
+                      )}
+                    </div>
+                  </Link>
                   <div className={styles.prodInfo}>
-                    <h3 className={styles.prodName}>{name}</h3>
+                    <Link href={`/products/${p.slug}`}>
+                      <h3 className={styles.prodName}>{name}</h3>
+                    </Link>
                     <div className={styles.prodBottom}>
-                      <span className={styles.prodPrice}>{p.price} сом.</span>
-                      <span className={styles.prodUnit}>/ {p.unit || t('prod_unit_piece')}</span>
+                      <div className={styles.prodPriceWrap}>
+                        <span className={styles.prodPrice}>{p.price} сом.</span>
+                        <span className={styles.prodUnit}>/ {p.unit || t('prod_unit_piece')}</span>
+                      </div>
+                      <button
+                        className={styles.prodCartBtn}
+                        onClick={() => addToCart(p)}
+                        aria-label={t('prod_btn_add')}
+                      >
+                        <ShoppingCart size={16} />
+                      </button>
                     </div>
                   </div>
-                </Link>
+                </div>
               );
             })}
           </div>

@@ -224,7 +224,6 @@ export default function ProductsPage() {
               onClick={() => handleCategorySelect(cat.slug)}
             >
               <img src={categoryImage(cat.slug)} className={styles.pillThumb} alt="" />
-              {cat.icon ? <span>{cat.icon}</span> : null}
               <span>{lang === 'tj' ? cat.name_tj : cat.name_ru}</span>
             </button>
           ))}
