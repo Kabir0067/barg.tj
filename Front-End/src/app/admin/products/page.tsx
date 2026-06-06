@@ -153,9 +153,12 @@ export default function AdminProducts() {
       } else {
         fetchData(targetPage);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("Save error", err);
-      alert(t('admin_err_save'));
+      const detail = err?.response?.data
+        ? JSON.stringify(err.response.data)
+        : (err?.message || 'unknown');
+      alert(`Хато ${err?.response?.status || ''}: ${detail}`);
     }
   };
 
