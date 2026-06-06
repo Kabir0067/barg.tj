@@ -140,12 +140,10 @@ export default function AdminProducts() {
       fd.append('description_ru', formData.description_ru || '');
       if (imageFile) fd.append('image', imageFile);
 
-      const config = { headers: { 'Content-Type': 'multipart/form-data' } };
-
       if (editingSlug) {
-        await apiClient.patch(`/products/${editingSlug}/`, fd, config);
+        await apiClient.patch(`/products/${editingSlug}/`, fd);
       } else {
-        await apiClient.post('/products/', fd, config);
+        await apiClient.post('/products/', fd);
       }
 
       setIsModalOpen(false);
