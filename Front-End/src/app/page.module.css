@@ -227,20 +227,20 @@
   position: absolute;
   inset: 0;
   background: linear-gradient(
-    170deg,
-    rgba(5, 20, 14, 0.0) 0%,
-    rgba(5, 20, 14, 0.3) 50%,
-    rgba(5, 20, 14, 0.88) 100%
+    to bottom,
+    rgba(0,0,0,0.0) 25%,
+    rgba(0,0,0,0.25) 55%,
+    rgba(0,0,0,0.82) 100%
   );
   transition: background 0.3s;
 }
 @media (hover: hover) {
   .catCard:hover .catOverlay {
     background: linear-gradient(
-      170deg,
-      rgba(6, 78, 59, 0.1) 0%,
-      rgba(6, 78, 59, 0.4) 50%,
-      rgba(4, 120, 87, 0.92) 100%
+      to bottom,
+      rgba(6,78,59,0.05) 20%,
+      rgba(6,78,59,0.35) 55%,
+      rgba(4,120,87,0.92) 100%
     );
   }
 }
@@ -251,15 +251,21 @@
   z-index: 2;
   display: flex;
   align-items: flex-end;
-  padding: clamp(0.7rem, 2.5vw, 1rem);
+  padding: 0.65rem 0.75rem;
+}
+@media (min-width: 640px) {
+  .catContent { padding: 0.85rem 1rem; }
 }
 
 .catName {
   font-weight: 900;
-  font-size: clamp(0.82rem, 2.4vw, 1.05rem);
+  font-size: clamp(0.88rem, 2.8vw, 1.05rem);
   color: #fff;
-  line-height: 1.2;
-  text-shadow: 0 1px 10px rgba(0,0,0,0.7), 0 2px 4px rgba(0,0,0,0.5);
+  line-height: 1.25;
+  text-shadow:
+    0 2px 16px rgba(0,0,0,0.95),
+    0 1px 4px rgba(0,0,0,0.8),
+    0 0px 2px rgba(0,0,0,0.6);
   word-break: break-word;
 }
 
@@ -374,8 +380,9 @@
 .prodBottom {
   margin-top: auto;
   display: flex;
-  align-items: baseline;
-  gap: 3px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
 }
 
 .prodPrice {
