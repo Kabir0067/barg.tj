@@ -181,7 +181,7 @@ export default function CartPage() {
           <span>{t('cart_total')}</span>
           <span className={styles.summaryTotal}>{total.toFixed(0)} сомонӣ</span>
         </div>
-        {total >= 500 && <p className={styles.freeShip}>{t('cart_free_ship')}</p>}
+        {total >= 5000 && <p className={styles.freeShip}>{t('cart_free_ship')}</p>}
         <button className="btn-primary" onClick={() => setStep('form')} style={{width: '100%', marginTop: '1rem'}}>
           {t('cart_btn_checkout')} <ArrowRight size={20} />
         </button>

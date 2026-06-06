@@ -353,7 +353,7 @@ class Order(models.Model):
 
     def calculate_total(self):
         self.subtotal = sum(item.subtotal for item in self.items.all())
-        if self.subtotal >= 500:
+        if self.subtotal >= 5000:
             self.delivery_fee = Decimal('0')
         else:
             self.delivery_fee = Decimal('20.00')
