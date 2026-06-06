@@ -3,10 +3,12 @@ import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import Cookies from 'js-cookie';
 import { ShoppingCart, Edit, Plus, X, Trash2, Image, Search, LayoutGrid, Truck, ShieldCheck, Boxes } from 'lucide-react';
-import { apiClient, mediaUrl } from '@/lib/apiClient';
+import { apiClient, mediaUrl, categoryImage } from '@/lib/apiClient';
 import { useCart } from '@/context/CartContext';
 import { useLanguage } from '@/context/LanguageContext';
 import styles from './Products.module.css';
+
+const PAGE_SIZE = 12;
 
 export default function ProductsPage() {
   const { addToCart } = useCart();
@@ -17,16 +19,14 @@ export default function ProductsPage() {
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
 
-  // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
-  const PAGE_SIZE = 8;
 
-  // Search & Filter State
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('');
+  // null = not yet initialized from URL (prevents double-fetch on mount)
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
-  // Modal State for Admin CRUD
+  // Admin CRUD modal state
   const [modalOpen, setModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<any>(null);
   const [formNameTj, setFormNameTj] = useState('');
@@ -42,103 +42,86 @@ export default function ProductsPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
-  // Fetch products with search, category, and pagination
-  const fetchProducts = useCallback((search = '', category = '', page = 1) => {
+  const fetchProducts = useCallback((search: string, category: string, page: number) => {
     setLoading(true);
-    let query = `page=${page}&page_size=${PAGE_SIZE}&`;
-    if (search) query += `search=${encodeURIComponent(search)}&`;
-    if (category) query += `category=${encodeURIComponent(category)}&`;
+    let query = `page=${page}&page_size=${PAGE_SIZE}`;
+    if (search) query += `&search=${encodeURIComponent(search)}`;
+    if (category) query += `&category=${encodeURIComponent(category)}`;
 
     apiClient.get(`/products/?${query}`)
       .then(res => {
-        if (res.data && res.data.results !== undefined) {
-          setProducts(res.data.results);
-          setTotalItems(res.data.count || 0);
-        } else {
-          setProducts(res.data || []);
-          setTotalItems(res.data?.length || 0);
-        }
+        setProducts(res.data.results || res.data || []);
+        setTotalItems(res.data.count || res.data?.length || 0);
       })
       .catch(console.error)
       .finally(() => setLoading(false));
   }, []);
 
+  // Mount: read URL params, fetch categories, check admin
   useEffect(() => {
-    fetchProducts(searchQuery, selectedCategory, currentPage);
+    const params = new URLSearchParams(window.location.search);
+    setSelectedCategory(params.get('category') || '');
 
     apiClient.get('/categories/')
       .then(res => setCategories(res.data.results || res.data || []))
       .catch(console.error);
 
-    // Check admin privileges
     const token = Cookies.get('access_token');
     if (token) {
       apiClient.get('/auth/me/')
-        .then(res => {
-          if (res.data?.is_staff) {
-            setIsAdmin(true);
-          }
-        })
-        .catch(() => setIsAdmin(false));
+        .then(res => { if (res.data?.is_staff) setIsAdmin(true); })
+        .catch(() => {});
     }
-  }, [fetchProducts, currentPage]);
+  }, []);
 
-  // Handle Search Input Change
+  // Fetch products whenever filters or page changes (after initialization)
+  useEffect(() => {
+    if (selectedCategory === null) return;
+    fetchProducts(searchQuery, selectedCategory, currentPage);
+  }, [fetchProducts, searchQuery, selectedCategory, currentPage]);
+
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value;
-    setSearchQuery(val);
+    setSearchQuery(e.target.value);
     setCurrentPage(1);
-    fetchProducts(val, selectedCategory, 1);
   };
 
-  // Handle Category Filter Click
-  const handleCategorySelect = (categorySlug: string) => {
-    setSelectedCategory(categorySlug);
+  const handleCategorySelect = (slug: string) => {
+    setSelectedCategory(slug);
     setCurrentPage(1);
-    fetchProducts(searchQuery, categorySlug, 1);
   };
 
   const handlePageChange = (newPage: number) => {
+    const maxPage = Math.ceil(totalItems / PAGE_SIZE);
+    if (newPage < 1 || newPage > maxPage) return;
     setCurrentPage(newPage);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const openAddModal = () => {
     setEditingProduct(null);
-    setFormNameTj('');
-    setFormNameRu('');
-    setFormPrice('');
-    setFormCostPrice('');
-    setFormSku('');
-    setFormStock('');
-    setFormThreshold('5');
+    setFormNameTj(''); setFormNameRu(''); setFormPrice(''); setFormCostPrice('');
+    setFormSku(''); setFormStock(''); setFormThreshold('5');
     setFormUnit(lang === 'tj' ? 'дона' : 'шт');
     setFormCategory(categories[0]?.id || '');
-    setFormImage(null);
-    setError('');
+    setFormImage(null); setError('');
     setModalOpen(true);
   };
 
   const openEditModal = (p: any) => {
     setEditingProduct(p);
-    setFormNameTj(p.name_tj || '');
-    setFormNameRu(p.name_ru || '');
-    setFormPrice(p.price || '');
-    setFormCostPrice(p.cost_price || '');
-    setFormSku(p.sku || '');
-    setFormStock(p.stock || '');
+    setFormNameTj(p.name_tj || ''); setFormNameRu(p.name_ru || '');
+    setFormPrice(p.price || ''); setFormCostPrice(p.cost_price || '');
+    setFormSku(p.sku || ''); setFormStock(p.stock || '');
     setFormThreshold(p.low_stock_threshold || '5');
     setFormUnit(p.unit || 'дона');
     setFormCategory(p.category || '');
-    setFormImage(null);
-    setError('');
+    setFormImage(null); setError('');
     setModalOpen(true);
   };
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSaving(true);
-    setError('');
-
+    setSaving(true); setError('');
     const formData = new FormData();
     formData.append('name_tj', formNameTj);
     formData.append('name_ru', formNameRu);
@@ -148,12 +131,8 @@ export default function ProductsPage() {
     formData.append('stock', formStock);
     formData.append('low_stock_threshold', formThreshold);
     formData.append('unit', formUnit);
-    if (formCategory) {
-      formData.append('category', formCategory);
-    }
-    if (formImage) {
-      formData.append('image', formImage);
-    }
+    if (formCategory) formData.append('category', formCategory);
+    if (formImage) formData.append('image', formImage);
 
     try {
       if (editingProduct) {
@@ -166,8 +145,8 @@ export default function ProductsPage() {
         });
       }
       setModalOpen(false);
-      fetchProducts(searchQuery, selectedCategory);
-    } catch (err: any) {
+      fetchProducts(searchQuery, selectedCategory || '', currentPage);
+    } catch {
       setError(lang === 'tj' ? 'Хатогӣ дар нигоҳдорӣ. Майдонҳоро дуруст пур кунед.' : 'Ошибка сохранения. Заполните поля корректно.');
     } finally {
       setSaving(false);
@@ -178,16 +157,18 @@ export default function ProductsPage() {
     if (!confirm(t('prod_admin_delete_confirm'))) return;
     try {
       await apiClient.delete(`/products/${slug}/`);
-      fetchProducts(searchQuery, selectedCategory);
+      fetchProducts(searchQuery, selectedCategory || '', currentPage);
     } catch {
       alert(lang === 'tj' ? 'Хатогӣ дар несткунӣ' : 'Ошибка при удалении');
     }
   };
 
+  const totalPages = Math.ceil(totalItems / PAGE_SIZE);
+
   return (
     <div className={`container ${styles.page}`}>
-      
-      {/* Catalog Hero Header */}
+
+      {/* Catalog Hero */}
       <div className={styles.hero}>
         <img src="/hero-products.jpg" alt="" className={styles.heroImg} aria-hidden="true" />
         <span className={styles.heroOverlay} />
@@ -195,27 +176,25 @@ export default function ProductsPage() {
           <span className={styles.heroBadge}>{t('prod_hero_badge')}</span>
           <h1 className={styles.heroTitle}>{t('prod_title')}</h1>
           <p className={styles.heroSubtitle}>{t('prod_desc')}</p>
-
           <div className={styles.heroStats}>
-            <span className={styles.heroStat}><Truck size={18} /> {t('prod_hero_delivery')}</span>
-            <span className={styles.heroStat}><ShieldCheck size={18} /> {t('prod_hero_quality')}</span>
+            <span className={styles.heroStat}><Truck size={16} /> {t('prod_hero_delivery')}</span>
+            <span className={styles.heroStat}><ShieldCheck size={16} /> {t('prod_hero_quality')}</span>
             {totalItems > 0 && (
-              <span className={styles.heroStat}><Boxes size={18} /> {totalItems}+ {t('prod_hero_count')}</span>
+              <span className={styles.heroStat}><Boxes size={16} /> {totalItems}+ {t('prod_hero_count')}</span>
             )}
           </div>
-
           {isAdmin && (
             <button className={`${styles.addProdBtn} btn-primary`} onClick={openAddModal}>
-              <Plus size={20} /> {t('prod_admin_add')}
+              <Plus size={18} /> {t('prod_admin_add')}
             </button>
           )}
         </div>
       </div>
 
-      {/* Premium Search and Category Filter section */}
+      {/* Search + Category Filter */}
       <div className={styles.filterSection}>
         <div className={styles.searchBar}>
-          <Search size={20} className={styles.searchIcon} />
+          <Search size={18} className={styles.searchIcon} />
           <input
             type="text"
             value={searchQuery}
@@ -223,28 +202,29 @@ export default function ProductsPage() {
             placeholder={lang === 'tj' ? 'Ҷустуҷӯи маҳсулот...' : 'Поиск товаров...'}
           />
           {searchQuery && (
-            <button onClick={() => { setSearchQuery(''); fetchProducts('', selectedCategory); }} className={styles.clearSearch}>
-              <X size={18} />
+            <button onClick={() => { setSearchQuery(''); setCurrentPage(1); }} className={styles.clearSearch}>
+              <X size={16} />
             </button>
           )}
         </div>
 
-        {/* Horizontal Scrollable Category Pills */}
         <div className={styles.categoryPills}>
           <button
             className={`${styles.pill} ${selectedCategory === '' ? styles.pillActive : ''}`}
             onClick={() => handleCategorySelect('')}
           >
-            <LayoutGrid size={16} />
-            <span>{lang === 'tj' ? 'Ҳама маҳсулот' : 'Все товары'}</span>
+            <LayoutGrid size={15} />
+            <span>{lang === 'tj' ? 'Ҳама' : 'Все'}</span>
           </button>
-          
+
           {categories.map((cat: any) => (
             <button
               key={cat.id}
               className={`${styles.pill} ${selectedCategory === cat.slug ? styles.pillActive : ''}`}
               onClick={() => handleCategorySelect(cat.slug)}
             >
+              <img src={categoryImage(cat.slug)} className={styles.pillThumb} alt="" />
+              {cat.icon ? <span>{cat.icon}</span> : null}
               <span>{lang === 'tj' ? cat.name_tj : cat.name_ru}</span>
             </button>
           ))}
@@ -265,18 +245,18 @@ export default function ProductsPage() {
                 <div className={styles.imgContainer}>
                   <Link href={`/products/${p.slug}`} className={styles.imgWrap}>
                     {p.image ? (
-                      <img src={mediaUrl(p.image)} alt={name} className={styles.img} />
+                      <img src={mediaUrl(p.image)} alt={name} className={styles.img} loading="lazy" />
                     ) : (
                       <div className={styles.noImg}>{t('prod_no_img')}</div>
                     )}
                   </Link>
                   {isAdmin && (
                     <div className={styles.adminBadges}>
-                      <button className={styles.editBadge} onClick={() => openEditModal(p)} title={t('prod_admin_edit')}>
-                        <Edit size={16} />
+                      <button className={styles.editBadge} onClick={() => openEditModal(p)}>
+                        <Edit size={15} />
                       </button>
-                      <button className={styles.deleteBadge} onClick={() => handleDelete(p.slug)} title="Нест кардан">
-                        <Trash2 size={16} />
+                      <button className={styles.deleteBadge} onClick={() => handleDelete(p.slug)}>
+                        <Trash2 size={15} />
                       </button>
                     </div>
                   )}
@@ -291,7 +271,7 @@ export default function ProductsPage() {
                       <span className={styles.unit}>/ {p.unit || t('prod_unit_piece')}</span>
                     </div>
                     <button className={styles.addBtn} onClick={() => addToCart(p)} aria-label={t('prod_btn_add')}>
-                      <ShoppingCart size={20} />
+                      <ShoppingCart size={18} />
                     </button>
                   </div>
                 </div>
@@ -306,92 +286,99 @@ export default function ProductsPage() {
         </div>
       )}
 
-      {/* Pagination Controls */}
-      {Math.ceil(totalItems / PAGE_SIZE) > 1 && (
+      {/* Pagination */}
+      {totalPages > 1 && (
         <div className={styles.pagination}>
           <button
             onClick={() => handlePageChange(currentPage - 1)}
             disabled={currentPage === 1}
             className={styles.pageBtn}
+            aria-label="Саҳифаи қаблӣ"
           >
-            {lang === 'tj' ? 'Қаблан' : 'Назад'}
+            ‹
           </button>
-          
-          {Array.from({ length: Math.ceil(totalItems / PAGE_SIZE) }, (_, i) => i + 1).map(pageNumber => (
-            <button
-              key={pageNumber}
-              onClick={() => handlePageChange(pageNumber)}
-              className={`${styles.pageBtn} ${currentPage === pageNumber ? styles.pageActive : ''}`}
-            >
-              {pageNumber}
-            </button>
-          ))}
+
+          {Array.from({ length: totalPages }, (_, i) => i + 1)
+            .filter(p => p === 1 || p === totalPages || Math.abs(p - currentPage) <= 1)
+            .reduce<(number | '...')[]>((acc, p, idx, arr) => {
+              if (idx > 0 && (arr[idx - 1] as number) < p - 1) acc.push('...');
+              acc.push(p);
+              return acc;
+            }, [])
+            .map((item, idx) =>
+              item === '...' ? (
+                <span key={`dots-${idx}`} className={styles.pageDots}>…</span>
+              ) : (
+                <button
+                  key={item}
+                  onClick={() => handlePageChange(item as number)}
+                  className={`${styles.pageBtn} ${currentPage === item ? styles.pageActive : ''}`}
+                >
+                  {item}
+                </button>
+              )
+            )}
 
           <button
             onClick={() => handlePageChange(currentPage + 1)}
-            disabled={currentPage === Math.ceil(totalItems / PAGE_SIZE)}
+            disabled={currentPage === totalPages}
             className={styles.pageBtn}
+            aria-label="Саҳифаи баъдӣ"
           >
-            {lang === 'tj' ? 'Баъдӣ' : 'Вперед'}
+            ›
           </button>
         </div>
       )}
 
-      {/* Modal Add/Edit */}
+      {/* Admin Modal */}
       {modalOpen && (
         <div className={styles.modalOverlay}>
           <div className={styles.modal}>
             <div className={styles.modalHead}>
               <h2>{editingProduct ? t('prod_admin_edit') : t('prod_admin_add')}</h2>
               <button onClick={() => setModalOpen(false)} className={styles.modalClose}>
-                <X size={24} />
+                <X size={22} />
               </button>
             </div>
-
             <form onSubmit={handleSave} className={styles.modalForm}>
               <div className={styles.modalField}>
-                <label>{lang === 'tj' ? 'Номи маҳсулот (Тоҷикӣ)' : 'Название товара (Таджикский)'}</label>
+                <label>{lang === 'tj' ? 'Номи маҳсулот (Тоҷикӣ)' : 'Название (Таджикский)'}</label>
                 <input type="text" value={formNameTj} onChange={e => setFormNameTj(e.target.value)} required />
               </div>
-
               <div className={styles.modalField}>
-                <label>{lang === 'tj' ? 'Номи маҳсулот (Русӣ)' : 'Название товара (Русский)'}</label>
+                <label>{lang === 'tj' ? 'Номи маҳсулот (Русӣ)' : 'Название (Русский)'}</label>
                 <input type="text" value={formNameRu} onChange={e => setFormNameRu(e.target.value)} required />
               </div>
-
               <div className={styles.modalRow}>
                 <div className={styles.modalField}>
-                  <label>{lang === 'tj' ? 'Нархи фурӯш (сомонӣ)' : 'Цена продажи (сомони)'}</label>
+                  <label>{lang === 'tj' ? 'Нархи фурӯш' : 'Цена продажи'}</label>
                   <input type="number" step="0.01" value={formPrice} onChange={e => setFormPrice(e.target.value)} required />
                 </div>
                 <div className={styles.modalField}>
-                  <label>{lang === 'tj' ? 'Нархи харид (сомонӣ)' : 'Себестоимость (сомони)'}</label>
+                  <label>{lang === 'tj' ? 'Нархи харид' : 'Себестоимость'}</label>
                   <input type="number" step="0.01" value={formCostPrice} onChange={e => setFormCostPrice(e.target.value)} required />
                 </div>
               </div>
-
               <div className={styles.modalRow}>
                 <div className={styles.modalField}>
-                  <label>{lang === 'tj' ? 'Артикул (SKU)' : 'Артикул (SKU)'}</label>
+                  <label>SKU</label>
                   <input type="text" value={formSku} onChange={e => setFormSku(e.target.value)} required />
                 </div>
                 <div className={styles.modalField}>
-                  <label>{lang === 'tj' ? 'Маҷмӯъ (Миқдор)' : 'Количество на складе'}</label>
+                  <label>{lang === 'tj' ? 'Миқдор' : 'Количество'}</label>
                   <input type="number" value={formStock} onChange={e => setFormStock(e.target.value)} required />
                 </div>
               </div>
-
               <div className={styles.modalRow}>
                 <div className={styles.modalField}>
-                  <label>{lang === 'tj' ? 'Ҳадди ақали захира' : 'Порог низкого запаса'}</label>
+                  <label>{lang === 'tj' ? 'Ҳадди ақал' : 'Порог запаса'}</label>
                   <input type="number" value={formThreshold} onChange={e => setFormThreshold(e.target.value)} required />
                 </div>
                 <div className={styles.modalField}>
-                  <label>{lang === 'tj' ? 'Воҳиди ченкунӣ' : 'Единица измерения'}</label>
+                  <label>{lang === 'tj' ? 'Воҳид' : 'Ед. изм.'}</label>
                   <input type="text" value={formUnit} onChange={e => setFormUnit(e.target.value)} required />
                 </div>
               </div>
-
               <div className={styles.modalField}>
                 <label>{lang === 'tj' ? 'Категория' : 'Категория'}</label>
                 <select value={formCategory} onChange={e => setFormCategory(e.target.value)} required>
@@ -401,19 +388,18 @@ export default function ProductsPage() {
                   ))}
                 </select>
               </div>
-
               <div className={styles.modalField}>
-                <label>{lang === 'tj' ? 'Расми маҳсулот' : 'Изображение товара'}</label>
+                <label>{lang === 'tj' ? 'Расм' : 'Изображение'}</label>
                 <div className={styles.fileInputWrap}>
-                  <Image size={20} />
+                  <Image size={18} />
                   <input type="file" onChange={e => setFormImage(e.target.files?.[0] || null)} accept="image/*" />
                 </div>
               </div>
-
               {error && <div className={styles.modalError}>{error}</div>}
-
               <div className={styles.modalActions}>
-                <button type="button" className="btn-outline" onClick={() => setModalOpen(false)}>{lang === 'tj' ? 'Баргаштан' : 'Отмена'}</button>
+                <button type="button" className="btn-outline" onClick={() => setModalOpen(false)}>
+                  {lang === 'tj' ? 'Баргаштан' : 'Отмена'}
+                </button>
                 <button type="submit" className="btn-primary" disabled={saving}>
                   {saving ? '...' : (lang === 'tj' ? 'Сабт кардан' : 'Сохранить')}
                 </button>

@@ -1,5 +1,5 @@
 .page {
-  padding: 3rem 0;
+  padding: 1.5rem 0 4rem;
 }
 
 .back {
@@ -8,28 +8,24 @@
   gap: 8px;
   color: var(--text-secondary);
   font-weight: 600;
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
   transition: color 0.2s;
+  font-size: 0.9rem;
 }
-.back:hover {
-  color: var(--brand-primary);
-}
+.back:hover { color: var(--brand-primary); }
 
 .grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 2rem;
+  gap: 1.5rem;
   background: var(--bg-card);
   border: 1px solid var(--border-light);
-  padding: clamp(1.5rem, 5vw, 3rem);
+  padding: clamp(1.25rem, 4vw, 2.5rem);
   border-radius: var(--radius-lg);
   transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 @media (min-width: 768px) {
-  .grid {
-    grid-template-columns: 1fr 1fr;
-    gap: 3rem;
-  }
+  .grid { grid-template-columns: 1fr 1fr; gap: 2.5rem; }
 }
 
 .imgWrap {
@@ -38,6 +34,10 @@
   overflow: hidden;
   background: var(--bg-main);
   border: 1px solid var(--border-light);
+  max-height: 360px;
+}
+@media (min-width: 768px) {
+  .imgWrap { max-height: none; }
 }
 
 .img {
@@ -53,49 +53,48 @@
   align-items: center;
   justify-content: center;
   color: var(--text-secondary);
-  font-size: 1.1rem;
+  font-size: 1rem;
 }
 
 .info {
   display: flex;
   flex-direction: column;
-  justify-content: center;
 }
 
 .title {
-  font-size: clamp(1.75rem, 4vw, 2.5rem);
+  font-size: clamp(1.45rem, 4vw, 2.25rem);
   font-weight: 900;
-  line-height: 1.2;
-  margin-bottom: 0.5rem;
+  line-height: 1.15;
+  margin-bottom: 0.4rem;
   color: var(--text-primary);
 }
 
 .ruName {
-  font-size: 1.1rem;
+  font-size: 1rem;
   color: var(--text-secondary);
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.25rem;
 }
 
 .priceBlock {
   display: flex;
   align-items: baseline;
   gap: 6px;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.25rem;
 }
 
 .price {
-  font-size: 2rem;
+  font-size: clamp(1.6rem, 4vw, 2rem);
   font-weight: 900;
   color: var(--brand-primary);
 }
 
 .unit {
-  font-size: 1rem;
+  font-size: 0.95rem;
   color: var(--text-secondary);
 }
 
 .stock {
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
 }
 
 .inStock {
@@ -103,8 +102,8 @@
   background: rgba(34, 197, 94, 0.1);
   color: var(--success);
   font-weight: 700;
-  font-size: 0.95rem;
-  padding: 8px 16px;
+  font-size: 0.9rem;
+  padding: 7px 14px;
   border-radius: var(--radius-full);
 }
 
@@ -113,29 +112,34 @@
   background: rgba(239, 68, 68, 0.1);
   color: var(--error);
   font-weight: 700;
-  font-size: 0.95rem;
-  padding: 8px 16px;
+  font-size: 0.9rem;
+  padding: 7px 14px;
   border-radius: var(--radius-full);
 }
 
 .actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 1.25rem;
+  gap: 1rem;
   align-items: center;
+}
+
+/* On mobile: qty full-width, button full-width */
+@media (max-width: 480px) {
+  .actions { gap: 0.75rem; }
 }
 
 .qty {
   display: flex;
   align-items: center;
   background: var(--bg-main);
-  border: 1px solid var(--border-light);
+  border: 1.5px solid var(--border-light);
   border-radius: var(--radius-full);
-  padding: 6px;
+  padding: 5px;
 }
 .qty button {
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -143,7 +147,7 @@
   color: var(--text-secondary);
   transition: all 0.2s;
 }
-.qty button:hover {
+.qty button:hover, .qty button:active {
   background: var(--brand-light);
   color: var(--brand-primary);
 }
@@ -151,28 +155,23 @@
   font-weight: 800;
   font-size: 1.1rem;
   padding: 0 16px;
-  min-width: 44px;
+  min-width: 48px;
   text-align: center;
   color: var(--text-primary);
 }
 
 .description {
-  margin-top: 1.75rem;
-  padding-top: 1.5rem;
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
   border-top: 1px solid var(--border-light);
   color: var(--text-secondary);
   line-height: 1.7;
   white-space: pre-line;
+  font-size: 0.95rem;
 }
 
-/* === MOBILE POLISH === */
-@media (max-width: 600px) {
-  .page { padding: 1.5rem 0 3rem; }
-  .back { margin-bottom: 1.25rem; }
-  .actions { gap: 1rem; }
-}
-/* On very small screens, stack qty above a full-width Add button */
-@media (max-width: 380px) {
+/* Mobile tweaks */
+@media (max-width: 480px) {
   .actions { flex-direction: column; align-items: stretch; }
   .qty { justify-content: center; }
 }
