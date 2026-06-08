@@ -39,12 +39,15 @@
   --text-primary: #f3f4f6;
   --text-secondary: #9ca3af;
   --border-light: #243049;
-  
+
+  --brand-primary: #34d399;
+  --brand-dark: #10b981;
   --brand-light: #064e3b;
+  --brand-gradient: linear-gradient(135deg, #064e3b 0%, #065f46 100%);
   --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
   --shadow-md: 0 4px 20px rgba(0,0,0,0.4);
   --shadow-lg: 0 16px 40px rgba(0,0,0,0.5);
-  --shadow-glow: 0 8px 30px rgba(16,185,129,0.15);
+  --shadow-glow: 0 8px 30px rgba(52,211,153,0.12);
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }

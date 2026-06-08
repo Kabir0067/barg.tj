@@ -4,10 +4,12 @@ from django.conf import settings
 from django.views.static import serve
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from api.views import telegram_webhook
 
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('api/telegram/webhook/', telegram_webhook, name='telegram_webhook'),
     path('api/', include('api.urls')),
     path('api/analytics/', include('analytics.urls')),
     path('api/ai/', include('ai_assistant.urls')),

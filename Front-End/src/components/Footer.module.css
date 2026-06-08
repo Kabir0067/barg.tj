@@ -155,7 +155,24 @@
   .col h4 { margin-bottom: 1.25rem; }
 }
 
-/* First column spans full width on mobile */
+/* On mobile: single column layout */
+@media (max-width: 639px) {
+  .footerGrid {
+    grid-template-columns: 1fr;
+    gap: 1.75rem;
+  }
+  .col:first-child { grid-column: auto; }
+  .mainFooter { padding: 2rem 0 1.5rem; }
+  .trustBar { padding: 1rem 0; }
+  .trustTitle { font-size: 0.8rem; }
+  .trustSub { display: none; }
+  .trustIcon { width: 38px; height: 38px; }
+  .partnersSection { display: none; }
+  .socials { gap: 6px; }
+  .socialBtn { width: 38px; height: 38px; }
+}
+
+/* First column spans full width on medium screens only */
 .col:first-child {
   grid-column: 1 / -1;
 }

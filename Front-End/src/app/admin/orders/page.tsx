@@ -4,7 +4,7 @@ import { apiClient } from '@/lib/apiClient';
 import { useLanguage } from '@/context/LanguageContext';
 import {
   Package, Phone, MapPin, Clock, Truck, CheckCircle2,
-  XCircle, CircleCheck, User, RefreshCw
+  XCircle, CircleCheck, User, RefreshCw, Trash2
 } from 'lucide-react';
 import styles from './AdminOrders.module.css';
 
@@ -42,7 +42,7 @@ type Staff = { id: number; name: string; phone: string };
 const STATUS_TABS = ['all', 'NEW', 'ACCEPTED', 'DELIVERING', 'COMPLETED', 'CANCELLED'];
 
 export default function AdminOrders() {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const [orders, setOrders] = useState<Order[]>([]);
   const [staff, setStaff] = useState<Staff[]>([]);
   const [loading, setLoading] = useState(true);
@@ -98,6 +98,19 @@ export default function AdminOrders() {
 
   const assignCourier = (order: Order, workerId: string) => {
     patchOrder(order.id, { assigned_worker: workerId ? Number(workerId) : null });
+  };
+
+  const deleteOrder = async (id: number) => {
+    if (!window.confirm(lang === 'ru' ? 'Удалить этот заказ навсегда?' : 'Ин заказро пок кунед?')) return;
+    setBusyId(id);
+    try {
+      await apiClient.delete(`/orders/${id}/`);
+      setOrders((prev) => prev.filter((o) => o.id !== id));
+    } catch (err) {
+      console.error('Delete order error', err);
+    } finally {
+      setBusyId(null);
+    }
   };
 
   const visible = filter === 'all' ? orders : orders.filter((o) => o.status === filter);
@@ -214,6 +227,10 @@ export default function AdminOrders() {
                   {order.assigned_worker_name && (
                     <span className={styles.courierTag}>· {order.assigned_worker_name}</span>
                   )}
+                  <button className={styles.btnDelete} disabled={busyId === order.id}
+                    onClick={() => deleteOrder(order.id)} title={lang === 'ru' ? 'Удалить' : 'Нест кардан'}>
+                    <Trash2 size={15} />
+                  </button>
                 </div>
               ) : (
                 <div className={styles.actions}>
@@ -238,6 +255,10 @@ export default function AdminOrders() {
                   <button className={styles.btnCancel} disabled={busyId === order.id}
                     onClick={() => changeStatus(order, 'CANCELLED')}>
                     <XCircle size={16} /> {t('ord_mark_cancelled')}
+                  </button>
+                  <button className={styles.btnDelete} disabled={busyId === order.id}
+                    onClick={() => deleteOrder(order.id)} title={lang === 'ru' ? 'Удалить' : 'Нест кардан'}>
+                    <Trash2 size={15} />
                   </button>
                 </div>
               )}

@@ -172,3 +172,21 @@ def get_me(request):
     Маълумот дар бораи муштарии ҷорӣ
     """
     return Response(CustomerSerializer(request.user).data)
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def telegram_webhook(request):
+    """
+    POST /api/telegram/webhook/
+    Telegram bot sends callback queries here (inline keyboard presses).
+    """
+    data = request.data
+    if 'callback_query' in data:
+        cb_data = data['callback_query'].get('data', '')
+        from .telegram import handle_telegram_callback, handle_delete_message_callback
+        if cb_data.startswith('delete_msg:'):
+            handle_delete_message_callback(data)
+        else:
+            handle_telegram_callback(data)
+    return Response({'ok': True})

@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import Cookies from 'js-cookie';
-import { LayoutDashboard, Package, BrainCircuit, LogOut, Menu, X, Sun, Moon, ClipboardList, Receipt } from 'lucide-react';
+import { LayoutDashboard, Package, BrainCircuit, LogOut, Menu, X, Sun, Moon, ClipboardList, Receipt, Home } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
 import { useTheme } from '@/context/ThemeContext';
 import styles from './AdminLayout.module.css';
@@ -72,6 +72,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </nav>
 
         <div className={styles.sidebarFooter}>
+          <Link href="/" className={styles.homeBtn}>
+            <Home size={18} />
+            <span>{lang === 'ru' ? 'На главную' : 'Ба сайт'}</span>
+          </Link>
           <button className={styles.logoutBtn} onClick={handleLogout}>
             <LogOut size={20} />
             <span>{t('admin_nav_logout')}</span>

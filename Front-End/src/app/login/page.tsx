@@ -79,7 +79,7 @@ export default function LoginPage() {
       <div className={styles.card}>
         <div className={styles.logoContainer}>
           <div className={styles.iconWrap}>
-            <Leaf size={32} className={styles.leafIcon} fill="var(--brand-primary)" />
+            <Leaf size={32} className={styles.leafIcon} color="#fff" fill="#fff" />
           </div>
           <span className={styles.logoText}>Barg.tj</span>
         </div>
@@ -183,7 +183,7 @@ export default function LoginPage() {
           {error && <div className={styles.error}>{error}</div>}
           {success && <div className={styles.success}>{success}</div>}
 
-          <button type="submit" className="btn-primary" disabled={loading} style={{ width: '100%', marginTop: '0.5rem' }}>
+          <button type="submit" className={styles.submitBtn} disabled={loading}>
             {loading ? '...' : (activeTab === 'login' ? t('btn_login') : t('btn_register'))}
             {!loading && <ArrowRight size={20} />}
           </button>

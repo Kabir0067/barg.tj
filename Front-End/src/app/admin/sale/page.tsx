@@ -25,8 +25,6 @@ export default function AdminSale() {
   const [query, setQuery] = useState('');
   const [products, setProducts] = useState<Product[]>([]);
   const [cart, setCart] = useState<SaleItem[]>([]);
-  const [customerName, setCustomerName] = useState('');
-  const [customerPhone, setCustomerPhone] = useState('');
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -87,12 +85,8 @@ export default function AdminSale() {
     try {
       await apiClient.post('/orders/quick_sale/', {
         items: cart.map((c) => ({ product_id: c.id, quantity: c.quantity })),
-        customer_name: customerName,
-        customer_phone: customerPhone,
       });
       setCart([]);
-      setCustomerName('');
-      setCustomerPhone('');
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3500);
       fetchProducts(query); // навсозии захира
@@ -188,21 +182,6 @@ export default function AdminSale() {
               ))}
             </div>
           )}
-
-          <div className={styles.customerFields}>
-            <input
-              type="text"
-              value={customerName}
-              onChange={(e) => setCustomerName(e.target.value)}
-              placeholder={t('sale_customer')}
-            />
-            <input
-              type="tel"
-              value={customerPhone}
-              onChange={(e) => setCustomerPhone(e.target.value)}
-              placeholder={t('sale_phone')}
-            />
-          </div>
 
           <div className={styles.cartFooter}>
             <div className={styles.totalRow}>
