@@ -155,10 +155,7 @@ export default function AdminProducts() {
       }
     } catch (err: any) {
       console.error("Save error", err);
-      const detail = err?.response?.data
-        ? JSON.stringify(err.response.data)
-        : (err?.message || 'unknown');
-      alert(`Хато ${err?.response?.status || ''}: ${detail}`);
+      alert(t('admin_err_save'));
     }
   };
 

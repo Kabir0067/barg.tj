@@ -1,7 +1,10 @@
+import io
 from decimal import Decimal
+from django.core.files.base import ContentFile
 from django.db import transaction
 from django.utils import timezone
 from rest_framework import serializers
+from PIL import Image as PilImage
 
 from .models import (
     Customer, Address, Category, Product, 
@@ -44,8 +47,29 @@ class ProductSerializer(serializers.ModelSerializer):
             'slug', 'price', 'cost_price', 'sku', 'stock', 'low_stock_threshold',
             'unit', 'description_tj', 'description_ru', 'image', 'is_active', 'created_at'
         ]
-        # slug худкор аз ном+артикул сохта мешавад (ниг. Product.save)
         read_only_fields = ['slug', 'created_at']
+
+    def validate_image(self, image):
+        """Ҳар формати расм (WEBP, HEIC, PNG, JPG)-ро ба JPEG табдил медиҳад."""
+        if not image:
+            return image
+        try:
+            img = PilImage.open(image)
+            if img.mode in ('RGBA', 'P', 'LA'):
+                bg = PilImage.new('RGB', img.size, (255, 255, 255))
+                if img.mode == 'P':
+                    img = img.convert('RGBA')
+                bg.paste(img, mask=img.split()[-1] if img.mode in ('RGBA', 'LA') else None)
+                img = bg
+            elif img.mode != 'RGB':
+                img = img.convert('RGB')
+            buf = io.BytesIO()
+            img.save(buf, format='JPEG', quality=88, optimize=True)
+            buf.seek(0)
+            name = image.name.rsplit('.', 1)[0] + '.jpg'
+            return ContentFile(buf.read(), name=name)
+        except Exception:
+            raise serializers.ValidationError('Расм нодуруст аст. JPG, PNG ё WEBP бор кунед.')
 
 
 class CustomerSerializer(serializers.ModelSerializer):
