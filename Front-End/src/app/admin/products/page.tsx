@@ -138,6 +138,7 @@ export default function AdminProducts() {
       fd.append('category', String(parseInt(formData.category as string, 10)));
       fd.append('description_tj', formData.description_tj || '');
       fd.append('description_ru', formData.description_ru || '');
+      fd.append('is_active', 'true');
       if (imageFile) fd.append('image', imageFile);
 
       if (editingSlug) {
