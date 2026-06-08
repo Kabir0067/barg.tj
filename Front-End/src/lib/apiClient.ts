@@ -27,15 +27,18 @@ export function categoryImage(slug?: string | null): string {
 
 export const apiClient = axios.create({
   baseURL: BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
 });
 
 apiClient.interceptors.request.use((config) => {
   const token = Cookies.get('access_token');
   if (token && config.headers) {
     config.headers.Authorization = `Bearer ${token}`;
+  }
+  // FormData-ро browser худаш Content-Type + boundary мегузорад — ману дастак назан
+  if (config.data instanceof FormData) {
+    delete config.headers['Content-Type'];
+  } else if (!config.headers['Content-Type']) {
+    config.headers['Content-Type'] = 'application/json';
   }
   return config;
 });
