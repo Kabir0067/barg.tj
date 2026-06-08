@@ -6,8 +6,14 @@ import "./globals.css";
 import LayoutWrapper from "@/components/LayoutWrapper";
 
 export const metadata: Metadata = {
-  title: "Barg.tj - Мағозаи Масолеҳи Сохтмонӣ",
+  title: "Barg.tj — Мағозаи Масолеҳи Сохтмонӣ",
   description: "Беҳтарин маҳсулоти сохтмонӣ бо нархи арзон ва расонидан ба хона",
+  icons: {
+    icon: [
+      { url: '/icon.svg', type: 'image/svg+xml' },
+    ],
+    apple: '/icon.svg',
+  },
 };
 
 export default function RootLayout({

@@ -5,7 +5,7 @@ import Cookies from 'js-cookie';
 import { useCart } from '@/context/CartContext';
 import { useLanguage } from '@/context/LanguageContext';
 import { useTheme } from '@/context/ThemeContext';
-import { ShoppingCart, Menu, X, Leaf, Shield, LogOut, Sun, Moon, User } from 'lucide-react';
+import { ShoppingCart, Menu, X, Shield, LogOut, Sun, Moon, User } from 'lucide-react';
 import { apiClient } from '@/lib/apiClient';
 import styles from './Navbar.module.css';
 
@@ -38,7 +38,11 @@ export default function Navbar() {
     <header className={styles.header}>
       <div className={`container ${styles.inner}`}>
         <Link href="/" className={styles.logo}>
-          <Leaf size={24} className={styles.logoIcon} fill="var(--brand-primary)" />
+          <svg className={styles.logoIcon} width="28" height="28" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="32" height="32" rx="8" fill="#047857"/>
+            <path d="M16 5C16 5 25 9.5 25 18.5C25 23.5 21 27 16 27C16 27 16.5 19 8 14.5C8 14.5 9.5 5 16 5Z" fill="white" opacity="0.95"/>
+            <path d="M16 27L16 15" stroke="#047857" strokeWidth="1.8" strokeLinecap="round"/>
+          </svg>
           <span>Barg.tj</span>
         </Link>
 

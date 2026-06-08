@@ -39,6 +39,9 @@ class CategorySerializer(serializers.ModelSerializer):
 
 class ProductSerializer(serializers.ModelSerializer):
     category_name = serializers.CharField(source='category.name_tj', read_only=True)
+    # FileField — Django ImageField validation-ро bypаss мекунад;
+    # validate_image дар поён форматро ба JPEG табдил медиҳад
+    image = serializers.FileField(required=False, allow_null=True, use_url=True)
 
     class Meta:
         model = Product

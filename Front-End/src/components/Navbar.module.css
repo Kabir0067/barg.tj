@@ -33,13 +33,15 @@
 }
 
 .logoIcon {
-  color: var(--brand-primary);
+  flex-shrink: 0;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(4, 120, 87, 0.35);
   animation: float 4s ease-in-out infinite;
 }
 
 @keyframes float {
   0%, 100% { transform: translateY(0) rotate(0deg); }
-  50% { transform: translateY(-4px) rotate(5deg); }
+  50% { transform: translateY(-3px) rotate(4deg); }
 }
 
 /* Desktop Nav */
