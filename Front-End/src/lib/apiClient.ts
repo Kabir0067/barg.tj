@@ -46,11 +46,11 @@ apiClient.interceptors.request.use((config) => {
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
-    // Handle 401 Unauthorized globally if needed
     if (error.response?.status === 401) {
       Cookies.remove('access_token');
-      if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login')) {
-        window.location.href = '/login';
+      // Redirect to admin-login only when on admin pages; public pages handle it locally
+      if (typeof window !== 'undefined' && window.location.pathname.startsWith('/admin')) {
+        window.location.href = '/admin-login';
       }
     }
     return Promise.reject(error);
