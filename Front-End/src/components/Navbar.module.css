@@ -208,80 +208,259 @@
   display: flex;
 }
 
-.mobile {
+/* ─── Premium mobile drawer ─── */
+.mobileOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.52);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  z-index: 1200;
+  animation: overlayFadeIn 0.22s ease;
+}
+@keyframes overlayFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.mobileDrawer {
   position: absolute;
-  top: 100%;
-  left: 0;
-  width: 100%;
+  top: 0;
+  right: 0;
+  width: min(320px, 88vw);
+  height: 100%;
   background: var(--bg-card);
-  border-bottom: 1px solid var(--border-light);
   display: flex;
   flex-direction: column;
-  padding: 1rem 1.5rem 1.5rem;
-  box-shadow: var(--shadow-lg);
-  animation: slideDown 0.25s ease-out;
+  box-shadow: -12px 0 48px rgba(0, 0, 0, 0.22);
+  animation: drawerSlideIn 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow-y: auto;
+}
+@keyframes drawerSlideIn {
+  from { transform: translateX(100%); }
+  to   { transform: translateX(0); }
 }
 
-@keyframes slideDown {
-  from { opacity: 0; transform: translateY(-8px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.mobileLink {
-  padding: 1rem 0;
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: var(--text-primary);
-  border-bottom: 1px solid var(--border-light);
-}
-.mobileLink:last-child {
-  border-bottom: none;
-}
-
-.mobileLangRow {
+.drawerHeader {
   display: flex;
-  gap: 8px;
-  padding: 1rem 0;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1.25rem 1rem;
   border-bottom: 1px solid var(--border-light);
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.06) 0%, transparent 100%);
+  flex-shrink: 0;
 }
 
-.mobileLangBtn {
-  flex: 1;
-  padding: 8px;
-  border-radius: var(--radius-md);
-  font-size: 0.9rem;
-  font-weight: 600;
+.drawerLogo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1.25rem;
+  font-weight: 900;
+  color: var(--brand-dark);
+  letter-spacing: -0.03em;
+}
+
+.drawerClose {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--bg-main);
+  border: 1px solid var(--border-light);
   color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+.drawerClose:hover {
+  background: rgba(239, 68, 68, 0.08);
+  color: var(--error);
+  border-color: rgba(239, 68, 68, 0.2);
+}
+
+.drawerNav {
+  display: flex;
+  flex-direction: column;
+  padding: 1rem 0.75rem;
+  gap: 4px;
+}
+
+.drawerLink {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 0.9rem 1rem;
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-weight: 600;
+  font-size: 0.97rem;
+  transition: all 0.18s;
+}
+.drawerLink:hover {
+  background: var(--bg-main);
+  color: var(--brand-primary);
+}
+.drawerLink svg:first-child {
+  color: var(--brand-primary);
+  flex-shrink: 0;
+}
+
+.drawerLinkAdmin {
+  background: var(--brand-light);
+  color: var(--brand-dark) !important;
+}
+.drawerLinkAdmin:hover {
+  background: var(--brand-primary) !important;
+  color: #fff !important;
+}
+.drawerLinkAdmin svg:first-child { color: var(--brand-dark); }
+.drawerLinkAdmin:hover svg { color: #fff !important; }
+
+.drawerArrow {
+  margin-left: auto;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+  transition: transform 0.18s;
+}
+.drawerLink:hover .drawerArrow {
+  transform: translateX(3px);
+  color: inherit;
+}
+
+.drawerDivider {
+  height: 1px;
+  background: var(--border-light);
+  margin: 0.35rem 1.1rem;
+  flex-shrink: 0;
+}
+
+.drawerLangSection {
+  padding: 0.9rem 1.25rem;
+}
+
+.drawerSectionLabel {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-secondary);
+  margin-bottom: 0.65rem;
+}
+
+.drawerLangBtns {
+  display: flex;
+  background: var(--bg-main);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-full);
+  padding: 3px;
+  gap: 3px;
+}
+
+.drawerLangBtn {
+  flex: 1;
+  padding: 9px 12px;
+  border-radius: var(--radius-full);
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  transition: all 0.2s;
+  text-align: center;
+}
+.drawerLangBtn:hover { color: var(--text-primary); }
+
+.drawerLangActive {
+  background: var(--brand-gradient);
+  color: #fff !important;
+  box-shadow: 0 3px 10px rgba(16, 185, 129, 0.3);
+}
+
+.drawerUserSection {
+  padding: 0.9rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.drawerUserCard {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0.85rem 1rem;
+  background: var(--bg-main);
+  border-radius: var(--radius-md);
   border: 1px solid var(--border-light);
 }
 
-.mobileLangActive {
-  background: var(--brand-primary);
+.drawerUserAvatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--brand-gradient);
   color: #fff;
-  border-color: var(--brand-primary);
-}
-
-.mobileUser {
+  font-weight: 800;
+  font-size: 1.15rem;
   display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 1rem 0;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
 }
 
-.mobileUsername {
+.drawerUserName {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.drawerUserSub {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+.drawerLogoutBtn {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 11px 14px;
+  background: rgba(239, 68, 68, 0.07);
+  color: var(--error);
+  border-radius: var(--radius-md);
+  font-weight: 700;
+  font-size: 0.9rem;
+  border: 1px solid rgba(239, 68, 68, 0.15);
+  transition: background 0.2s;
+  width: 100%;
+}
+.drawerLogoutBtn:hover { background: rgba(239, 68, 68, 0.14); }
+
+.drawerLoginBtn {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  margin: 0.9rem 1.25rem;
+  padding: 1.05rem 1.25rem;
+  background: var(--brand-gradient);
+  color: #fff;
+  border-radius: var(--radius-md);
   font-weight: 700;
   font-size: 1rem;
-  color: var(--text-primary);
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.35);
+  transition: box-shadow 0.2s, transform 0.15s;
+}
+.drawerLoginBtn:hover {
+  box-shadow: 0 8px 26px rgba(16, 185, 129, 0.5);
+  transform: translateY(-1px);
 }
 
-.mobileLogout {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  color: #ef4444;
-  font-weight: 600;
-  padding: 8px 12px;
-  background: rgba(239, 68, 68, 0.1);
-  border-radius: var(--radius-md);
-  width: fit-content;
+.drawerLoginArrow {
+  margin-left: auto;
+  flex-shrink: 0;
+  opacity: 0.85;
 }

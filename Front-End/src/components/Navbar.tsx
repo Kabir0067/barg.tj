@@ -5,7 +5,7 @@ import Cookies from 'js-cookie';
 import { useCart } from '@/context/CartContext';
 import { useLanguage } from '@/context/LanguageContext';
 import { useTheme } from '@/context/ThemeContext';
-import { ShoppingCart, Menu, X, Shield, LogOut, Sun, Moon, User } from 'lucide-react';
+import { ShoppingCart, Menu, X, Shield, LogOut, Sun, Moon, User, Package, ChevronRight } from 'lucide-react';
 import { apiClient } from '@/lib/apiClient';
 import styles from './Navbar.module.css';
 
@@ -108,39 +108,88 @@ export default function Navbar() {
       </div>
 
       {open && (
-        <nav className={styles.mobile}>
-          <Link href="/products" className={styles.mobileLink} onClick={() => setOpen(false)}>{t('nav_products')}</Link>
-          {user?.is_staff && (
-            <Link href="/admin" className={styles.mobileLink} onClick={() => setOpen(false)}>{t('nav_admin')}</Link>
-          )}
-          
-          {/* Mobile Language Switcher */}
-          <div className={styles.mobileLangRow}>
-            <button 
-              onClick={() => { setLang('tj'); setOpen(false); }} 
-              className={`${styles.mobileLangBtn} ${lang === 'tj' ? styles.mobileLangActive : ''}`}
-            >
-              Тоҷикӣ (TJ)
-            </button>
-            <button 
-              onClick={() => { setLang('ru'); setOpen(false); }} 
-              className={`${styles.mobileLangBtn} ${lang === 'ru' ? styles.mobileLangActive : ''}`}
-            >
-              Русский (RU)
-            </button>
-          </div>
-
-          {user ? (
-            <div className={styles.mobileUser}>
-              <span className={styles.mobileUsername}>{user.name || user.phone}</span>
-              <button onClick={() => { handleLogout(); setOpen(false); }} className={styles.mobileLogout}>
-                <LogOut size={18} /> {t('nav_logout')}
+        <div className={styles.mobileOverlay} onClick={() => setOpen(false)}>
+          <nav className={styles.mobileDrawer} onClick={(e) => e.stopPropagation()}>
+            {/* Drawer header */}
+            <div className={styles.drawerHeader}>
+              <Link href="/" className={styles.drawerLogo} onClick={() => setOpen(false)}>
+                <svg className={styles.logoIcon} width="26" height="26" viewBox="0 0 32 32" fill="none">
+                  <rect width="32" height="32" rx="8" fill="#047857"/>
+                  <path d="M16 5C16 5 25 9.5 25 18.5C25 23.5 21 27 16 27C16 27 16.5 19 8 14.5C8 14.5 9.5 5 16 5Z" fill="white" opacity="0.95"/>
+                  <path d="M16 27L16 15" stroke="#047857" strokeWidth="1.8" strokeLinecap="round"/>
+                </svg>
+                <span>Barg.tj</span>
+              </Link>
+              <button className={styles.drawerClose} onClick={() => setOpen(false)}>
+                <X size={20} />
               </button>
             </div>
-          ) : (
-            <Link href="/login" className={styles.mobileLink} onClick={() => setOpen(false)}>{t('nav_login')}</Link>
-          )}
-        </nav>
+
+            {/* Navigation links */}
+            <div className={styles.drawerNav}>
+              <Link href="/products" className={styles.drawerLink} onClick={() => setOpen(false)}>
+                <Package size={20} />
+                <span>{t('nav_products')}</span>
+                <ChevronRight size={16} className={styles.drawerArrow} />
+              </Link>
+              {user?.is_staff && (
+                <Link href="/admin" className={`${styles.drawerLink} ${styles.drawerLinkAdmin}`} onClick={() => setOpen(false)}>
+                  <Shield size={20} />
+                  <span>{t('nav_admin')}</span>
+                  <ChevronRight size={16} className={styles.drawerArrow} />
+                </Link>
+              )}
+            </div>
+
+            <div className={styles.drawerDivider} />
+
+            {/* Language section */}
+            <div className={styles.drawerLangSection}>
+              <span className={styles.drawerSectionLabel}>Язык / Забон</span>
+              <div className={styles.drawerLangBtns}>
+                <button
+                  onClick={() => { setLang('tj'); setOpen(false); }}
+                  className={`${styles.drawerLangBtn} ${lang === 'tj' ? styles.drawerLangActive : ''}`}
+                >
+                  Тоҷикӣ (TJ)
+                </button>
+                <button
+                  onClick={() => { setLang('ru'); setOpen(false); }}
+                  className={`${styles.drawerLangBtn} ${lang === 'ru' ? styles.drawerLangActive : ''}`}
+                >
+                  Русский (RU)
+                </button>
+              </div>
+            </div>
+
+            <div className={styles.drawerDivider} />
+
+            {/* User section */}
+            {user ? (
+              <div className={styles.drawerUserSection}>
+                <div className={styles.drawerUserCard}>
+                  <div className={styles.drawerUserAvatar}>
+                    {(user.name || user.phone || 'U')[0].toUpperCase()}
+                  </div>
+                  <div>
+                    <div className={styles.drawerUserName}>{user.name || user.phone}</div>
+                    <div className={styles.drawerUserSub}>Клиент / Муштарӣ</div>
+                  </div>
+                </div>
+                <button onClick={() => { handleLogout(); setOpen(false); }} className={styles.drawerLogoutBtn}>
+                  <LogOut size={18} />
+                  <span>{t('nav_logout')}</span>
+                </button>
+              </div>
+            ) : (
+              <Link href="/login" className={styles.drawerLoginBtn} onClick={() => setOpen(false)}>
+                <User size={20} />
+                <span>{t('nav_login')}</span>
+                <ChevronRight size={16} className={styles.drawerLoginArrow} />
+              </Link>
+            )}
+          </nav>
+        </div>
       )}
     </header>
   );

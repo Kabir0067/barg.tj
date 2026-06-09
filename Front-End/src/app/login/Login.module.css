@@ -116,19 +116,27 @@
 .activeTab:hover { color: #fff; }
 
 .title {
-  font-size: 1.75rem;
+  font-size: 1.7rem;
   font-weight: 900;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.6rem;
   letter-spacing: -0.03em;
-  color: var(--text-primary);
+  text-align: center;
+  background: linear-gradient(135deg, var(--text-primary) 50%, var(--brand-primary) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  line-height: 1.25;
 }
 
 .desc {
   color: var(--text-secondary);
   text-align: center;
-  margin-bottom: 2rem;
-  font-size: 0.93rem;
-  line-height: 1.65;
+  margin-bottom: 1.75rem;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  max-width: 300px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .form {
@@ -145,10 +153,10 @@
 }
 
 .field label {
-  font-weight: 600;
-  font-size: 0.88rem;
+  font-weight: 700;
+  font-size: 0.8rem;
   color: var(--text-secondary);
-  letter-spacing: 0.02em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 
@@ -270,9 +278,29 @@
 
 /* === MOBILE === */
 @media (max-width: 600px) {
-  .page { padding: 1rem 1rem 3rem; min-height: 100dvh; }
-  .card { padding: 2rem 1.5rem; border-radius: 24px; }
-  .iconWrap { width: 64px; height: 64px; border-radius: 18px; }
-  .title { font-size: 1.5rem; }
+  .page {
+    padding: 0;
+    align-items: flex-end;
+    background: var(--bg-main);
+  }
+  .card {
+    padding: 2rem 1.5rem 2.5rem;
+    border-radius: 28px 28px 0 0;
+    max-width: 100%;
+    box-shadow: 0 -8px 40px rgba(0,0,0,0.12), 0 -2px 12px rgba(16,185,129,0.08);
+    min-height: 80vh;
+    animation: slideUpMobile 0.38s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  @keyframes slideUpMobile {
+    from { transform: translateY(40px); opacity: 0; }
+    to   { transform: translateY(0); opacity: 1; }
+  }
+  .iconWrap { width: 60px; height: 60px; border-radius: 16px; }
+  .logoContainer { margin-bottom: 1.5rem; }
+  .title { font-size: 1.45rem; }
   .tabs { margin-bottom: 1.5rem; }
+  .desc { margin-bottom: 1.5rem; font-size: 0.86rem; }
+  .form { gap: 0.9rem; }
+  .submitBtn { padding: 15px; }
+  .footerLink { margin-top: 1.25rem; }
 }
