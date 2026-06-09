@@ -172,50 +172,82 @@ export default function AdminProducts() {
       {loading ? (
         <div className={styles.loading}>{t('admin_loading')}</div>
       ) : (
-        <div className={styles.tableContainer}>
-          <table className={styles.table}>
-            <thead>
-              <tr>
-                <th>{t('admin_prod_table_img')}</th>
-                <th>{t('admin_prod_table_name')}</th>
-                <th>{t('admin_prod_table_sku')}</th>
-                <th>{t('admin_prod_table_price')}</th>
-                <th>{t('admin_prod_table_cost')}</th>
-                <th>{t('admin_prod_table_stock')}</th>
-                <th>{t('admin_prod_table_actions')}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {products.map(product => {
-                const name = lang === 'tj' ? product.name_tj : (product.name_ru || product.name_tj);
-                return (
-                  <tr key={product.id}>
-                    <td className={styles.tdImage}>
-                      {product.image ? (
-                        <img src={mediaUrl(product.image)} alt="" className={styles.thumb} />
-                      ) : (
-                        <div className={styles.thumbPlaceholder}><ImageIcon size={16} /></div>
-                      )}
-                    </td>
-                    <td>{name}</td>
-                    <td className={styles.mono}>{product.sku}</td>
-                    <td className={styles.bold}>{product.price} TJS</td>
-                    <td className={styles.textGray}>{product.cost_price || '-'} TJS</td>
-                    <td>
-                      <span className={product.stock > 10 ? styles.stockGood : product.stock > 0 ? styles.stockWarn : styles.stockOut}>
-                        {product.stock} {product.unit}
-                      </span>
-                    </td>
-                    <td className={styles.actions}>
-                      <button className={styles.iconBtnEdit} onClick={() => openEditModal(product)}><Edit2 size={18} /></button>
-                      <button className={styles.iconBtnDelete} onClick={() => handleDelete(product.slug)}><Trash2 size={18} /></button>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+        <>
+          {/* Desktop/tablet table */}
+          <div className={styles.tableContainer}>
+            <table className={styles.table}>
+              <thead>
+                <tr>
+                  <th>{t('admin_prod_table_img')}</th>
+                  <th>{t('admin_prod_table_name')}</th>
+                  <th>{t('admin_prod_table_sku')}</th>
+                  <th>{t('admin_prod_table_price')}</th>
+                  <th>{t('admin_prod_table_cost')}</th>
+                  <th>{t('admin_prod_table_stock')}</th>
+                  <th>{t('admin_prod_table_actions')}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {products.map(product => {
+                  const name = lang === 'tj' ? product.name_tj : (product.name_ru || product.name_tj);
+                  return (
+                    <tr key={product.id}>
+                      <td className={styles.tdImage}>
+                        {product.image ? (
+                          <img src={mediaUrl(product.image)} alt="" className={styles.thumb} />
+                        ) : (
+                          <div className={styles.thumbPlaceholder}><ImageIcon size={16} /></div>
+                        )}
+                      </td>
+                      <td>{name}</td>
+                      <td className={styles.mono}>{product.sku}</td>
+                      <td className={styles.bold}>{product.price} TJS</td>
+                      <td className={styles.textGray}>{product.cost_price || '-'} TJS</td>
+                      <td>
+                        <span className={product.stock > 10 ? styles.stockGood : product.stock > 0 ? styles.stockWarn : styles.stockOut}>
+                          {product.stock} {product.unit}
+                        </span>
+                      </td>
+                      <td className={styles.actions}>
+                        <button className={styles.iconBtnEdit} onClick={() => openEditModal(product)}><Edit2 size={18} /></button>
+                        <button className={styles.iconBtnDelete} onClick={() => handleDelete(product.slug)}><Trash2 size={18} /></button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile card list (shown instead of table on small screens) */}
+          <div className={styles.mobileList}>
+            {products.map(product => {
+              const name = lang === 'tj' ? product.name_tj : (product.name_ru || product.name_tj);
+              const stockClass = product.stock > 10 ? styles.stockGood : product.stock > 0 ? styles.stockWarn : styles.stockOut;
+              return (
+                <div key={product.id} className={styles.mobileCard}>
+                  {product.image ? (
+                    <img src={mediaUrl(product.image)} alt="" className={styles.mobileThumb} />
+                  ) : (
+                    <div className={styles.mobileThumbEmpty}><ImageIcon size={20} /></div>
+                  )}
+                  <div className={styles.mobileCardBody}>
+                    <div className={styles.mobileCardName}>{name}</div>
+                    <div className={styles.mobileCardRow}>
+                      <span className={styles.mobileCardPrice}>{product.price} TJS</span>
+                      <span className={stockClass}>{product.stock} {product.unit}</span>
+                    </div>
+                    <span className={styles.mobileCardSku}>{product.sku}</span>
+                  </div>
+                  <div className={styles.mobileCardBtns}>
+                    <button className={styles.iconBtnEdit} onClick={() => openEditModal(product)}><Edit2 size={16} /></button>
+                    <button className={styles.iconBtnDelete} onClick={() => handleDelete(product.slug)}><Trash2 size={16} /></button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </>
       )}
 
       {/* Pagination Controls */}

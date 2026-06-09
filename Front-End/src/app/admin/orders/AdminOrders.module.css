@@ -209,5 +209,40 @@
 .empty svg { opacity: 0.4; }
 
 @media (max-width: 600px) {
-  .list { grid-template-columns: 1fr; }
+  .list { grid-template-columns: 1fr; gap: 1rem; }
+}
+
+@media (max-width: 480px) {
+  .header { flex-wrap: wrap; gap: 0.75rem; }
+  .title { font-size: 1.3rem; }
+  .subtitle { font-size: 0.82rem; }
+
+  .card { padding: 0.9rem; border-radius: var(--radius-md); }
+  .orderNumber { font-size: 0.95rem; }
+
+  .tabs { gap: 0.35rem; }
+  .tab { padding: 6px 11px; font-size: 0.78rem; }
+
+  .meta { gap: 4px 8px; font-size: 0.8rem; }
+  .items li { font-size: 0.82rem; }
+  .totals { font-size: 0.82rem; }
+  .totals .total strong { font-size: 0.95rem; }
+
+  .actions { gap: 0.4rem; }
+  .actions button {
+    flex: 1 1 calc(50% - 0.2rem);
+    min-width: 0;
+    padding: 9px 6px;
+    font-size: 0.78rem;
+    gap: 4px;
+  }
+  .btnCancel,
+  .btnDelete {
+    flex: 0 0 36px !important;
+    min-width: 36px !important;
+    padding: 9px !important;
+  }
+
+  .courierRow select { font-size: 0.8rem; padding: 7px 8px; width: 100%; }
+  .courierRow { flex-wrap: wrap; }
 }

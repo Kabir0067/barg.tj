@@ -90,6 +90,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <Menu size={24} />
           </button>
 
+          <span className={styles.topbarTitle}>
+            {menuItems.find(m => m.path === pathname)?.name ?? 'Admin'}
+          </span>
+
           <div className={styles.topbarRight}>
             {/* Language Selector */}
             <div className={styles.langSwitch}>

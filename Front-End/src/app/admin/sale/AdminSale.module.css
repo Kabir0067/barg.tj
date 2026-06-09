@@ -133,6 +133,33 @@
 .muted { padding: 2rem 1rem; text-align: center; color: var(--text-secondary); }
 
 @media (max-width: 860px) {
-  .layout { grid-template-columns: 1fr; }
+  .layout { grid-template-columns: 1fr; gap: 1.25rem; }
   .cart { position: static; max-height: none; }
+}
+
+@media (max-width: 480px) {
+  .title { font-size: 1.3rem; gap: 8px; }
+  .subtitle { font-size: 0.82rem; }
+
+  .searchBox { padding: 0 10px; }
+  .searchBox input { padding: 11px 0; font-size: 0.9rem; }
+
+  .productGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.6rem;
+  }
+  .productCard { padding: 10px; }
+  .pName { font-size: 0.82rem; }
+  .pPrice { font-size: 0.85rem; }
+  .pStock, .pOut { font-size: 0.68rem; }
+
+  .cart { border-radius: var(--radius-lg); padding: 1rem; }
+  .cartTitle { font-size: 1rem; }
+  .cartItem { padding: 8px; }
+  .ciName { font-size: 0.82rem; }
+
+  .totalRow { flex-wrap: wrap; gap: 0.5rem; }
+  .totalRow strong { font-size: 1.2rem; }
+
+  .cartFooter .btn-primary { width: 100%; justify-content: center; }
 }
