@@ -71,25 +71,48 @@ export default function Footer() {
             {lang === 'tj' ? 'Шарикони боэътимоди мо' : 'Наши надежные партнеры'}
           </h4>
           <div className={styles.partnersGrid}>
-            <div className={styles.partnerCard}>
-              <Award size={18} className={styles.partnerIcon} />
-              <span>Huaxin Cement</span>
-            </div>
-            <div className={styles.partnerCard}>
-              <Award size={18} className={styles.partnerIcon} />
-              <span>Total Energies</span>
-            </div>
-            <div className={styles.partnerCard}>
-              <Award size={18} className={styles.partnerIcon} />
-              <span>Makita Tools</span>
-            </div>
-            <div className={styles.partnerCard}>
-              <Award size={18} className={styles.partnerIcon} />
-              <span>Bosch Power</span>
-            </div>
-            <div className={styles.partnerCard}>
-              <Award size={18} className={styles.partnerIcon} />
-              <span>Knauf Gypsum</span>
+            <div className={styles.marqueeTrack} aria-hidden="false">
+              <div className={styles.partnerCard}>
+                <Award size={18} className={styles.partnerIcon} />
+                <span>Huaxin Cement</span>
+              </div>
+              <div className={styles.partnerCard}>
+                <Award size={18} className={styles.partnerIcon} />
+                <span>Total Energies</span>
+              </div>
+              <div className={styles.partnerCard}>
+                <Award size={18} className={styles.partnerIcon} />
+                <span>Makita Tools</span>
+              </div>
+              <div className={styles.partnerCard}>
+                <Award size={18} className={styles.partnerIcon} />
+                <span>Bosch Power</span>
+              </div>
+              <div className={styles.partnerCard}>
+                <Award size={18} className={styles.partnerIcon} />
+                <span>Knauf Gypsum</span>
+              </div>
+              {/* Duplicate for seamless loop */}
+              <div className={styles.partnerCard} aria-hidden="true">
+                <Award size={18} className={styles.partnerIcon} />
+                <span>Huaxin Cement</span>
+              </div>
+              <div className={styles.partnerCard} aria-hidden="true">
+                <Award size={18} className={styles.partnerIcon} />
+                <span>Total Energies</span>
+              </div>
+              <div className={styles.partnerCard} aria-hidden="true">
+                <Award size={18} className={styles.partnerIcon} />
+                <span>Makita Tools</span>
+              </div>
+              <div className={styles.partnerCard} aria-hidden="true">
+                <Award size={18} className={styles.partnerIcon} />
+                <span>Bosch Power</span>
+              </div>
+              <div className={styles.partnerCard} aria-hidden="true">
+                <Award size={18} className={styles.partnerIcon} />
+                <span>Knauf Gypsum</span>
+              </div>
             </div>
           </div>
         </div>
@@ -118,7 +141,7 @@ export default function Footer() {
             <h4>{lang === 'tj' ? 'Роҳбарият' : 'Руководство'}</h4>
             <div className={styles.contactItem}>
               <span className={styles.ownerLabel}>{lang === 'tj' ? 'Соҳибкор:' : 'Предприниматель:'}</span>
-              <span className={styles.ownerName}>{lang === 'tj' ? 'Бобоев Фирдавс' : 'Бобоев Фирдаус'}</span>
+              <span className={styles.ownerName}>Бобоев Фирдавс</span>
             </div>
             <p className={styles.subtext}>
               {lang === 'tj'

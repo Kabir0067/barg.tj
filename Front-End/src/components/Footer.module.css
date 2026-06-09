@@ -128,6 +128,17 @@
 
 .partnerIcon { color: var(--brand-primary); }
 
+/* Marquee track — animates only on mobile via media query below */
+.marqueeTrack {
+  display: flex;
+  width: max-content;
+}
+
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
 /* === Main Footer Grid === */
 .mainFooter {
   padding: 2.5rem 0 2rem;
@@ -168,24 +179,23 @@
   .trustSub { display: none; }
   .trustIcon { width: 38px; height: 38px; }
 
-  /* Partners: show as single scrolling row on mobile */
-  .partnersSection { display: block; padding: 0.9rem 0; }
+  /* Partners: marquee ticker on mobile */
+  .marqueeTrack { animation: marquee 18s linear infinite; }
+  .partnersSection { display: block; padding: 0.9rem 0; overflow: hidden; }
   .partnersTitle { margin-bottom: 0.65rem; font-size: 0.68rem; }
   .partnersGrid {
     flex-wrap: nowrap;
-    overflow-x: auto;
+    overflow: hidden;
     justify-content: flex-start;
-    gap: 0.55rem;
-    padding: 0.25rem 1rem 0.5rem;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
+    gap: 0;
+    padding: 0.25rem 0 0.5rem;
   }
-  .partnersGrid::-webkit-scrollbar { display: none; }
   .partnerCard {
     flex-shrink: 0;
     font-size: 0.75rem;
     padding: 5px 11px;
     white-space: nowrap;
+    margin: 0 0.28rem;
   }
 
   .socials { gap: 6px; }
