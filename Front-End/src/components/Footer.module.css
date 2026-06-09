@@ -167,7 +167,27 @@
   .trustTitle { font-size: 0.8rem; }
   .trustSub { display: none; }
   .trustIcon { width: 38px; height: 38px; }
-  .partnersSection { display: none; }
+
+  /* Partners: show as single scrolling row on mobile */
+  .partnersSection { display: block; padding: 0.9rem 0; }
+  .partnersTitle { margin-bottom: 0.65rem; font-size: 0.68rem; }
+  .partnersGrid {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    justify-content: flex-start;
+    gap: 0.55rem;
+    padding: 0.25rem 1rem 0.5rem;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .partnersGrid::-webkit-scrollbar { display: none; }
+  .partnerCard {
+    flex-shrink: 0;
+    font-size: 0.75rem;
+    padding: 5px 11px;
+    white-space: nowrap;
+  }
+
   .socials { gap: 6px; }
   .socialBtn { width: 38px; height: 38px; }
 }

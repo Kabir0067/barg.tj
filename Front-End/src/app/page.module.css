@@ -181,25 +181,26 @@
   gap: 10px;
 }
 @media (min-width: 480px) {
-  .catGrid { gap: 14px; }
+  .catGrid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
 }
 @media (min-width: 640px) {
-  .catGrid { grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .catGrid { grid-template-columns: repeat(4, 1fr); gap: 14px; }
 }
 @media (min-width: 1024px) {
-  .catGrid { grid-template-columns: repeat(4, 1fr); gap: 20px; }
+  .catGrid { grid-template-columns: repeat(4, 1fr); gap: 18px; }
 }
 
 .catCard {
   position: relative;
   display: block;
-  aspect-ratio: 4 / 3;
+  aspect-ratio: 1 / 1;
   border-radius: var(--radius-lg);
   overflow: hidden;
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-md);
   border: 1px solid var(--border-light);
   isolation: isolate;
   transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s;
+  background: var(--bg-main);
 }
 @media (hover: hover) {
   .catCard:hover {
@@ -228,9 +229,9 @@
   inset: 0;
   background: linear-gradient(
     to bottom,
-    rgba(0,0,0,0.0) 25%,
-    rgba(0,0,0,0.25) 55%,
-    rgba(0,0,0,0.82) 100%
+    rgba(0,0,0,0.04) 0%,
+    rgba(0,0,0,0.15) 45%,
+    rgba(0,0,0,0.78) 100%
   );
   transition: background 0.3s;
 }
@@ -238,9 +239,9 @@
   .catCard:hover .catOverlay {
     background: linear-gradient(
       to bottom,
-      rgba(6,78,59,0.05) 20%,
-      rgba(6,78,59,0.35) 55%,
-      rgba(4,120,87,0.92) 100%
+      rgba(4,120,87,0.08) 0%,
+      rgba(4,120,87,0.32) 50%,
+      rgba(4,120,87,0.9) 100%
     );
   }
 }

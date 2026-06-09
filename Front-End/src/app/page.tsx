@@ -80,7 +80,7 @@ export default function Home() {
             </Link>
           </div>
           <div className={styles.catGrid}>
-            {categories.map((cat: any) => {
+            {categories.slice(0, 8).map((cat: any) => {
               const catName = lang === 'tj' ? cat.name_tj : cat.name_ru;
               return (
                 <Link key={cat.id} href={`/products?category=${cat.slug}`} className={styles.catCard}>
@@ -132,7 +132,6 @@ export default function Home() {
                     <div className={styles.prodBottom}>
                       <div className={styles.prodPriceWrap}>
                         <span className={styles.prodPrice}>{p.price} сом.</span>
-                        <span className={styles.prodUnit}>/ {p.unit || t('prod_unit_piece')}</span>
                       </div>
                       <button
                         className={styles.prodCartBtn}

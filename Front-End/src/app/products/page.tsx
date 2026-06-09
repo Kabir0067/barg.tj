@@ -267,7 +267,6 @@ export default function ProductsPage() {
                   <div className={styles.bottom}>
                     <div>
                       <span className={styles.price}>{p.price} сом.</span>
-                      <span className={styles.unit}>/ {p.unit || t('prod_unit_piece')}</span>
                     </div>
                     <button className={styles.addBtn} onClick={() => addToCart(p)} aria-label={t('prod_btn_add')}>
                       <ShoppingCart size={18} />
