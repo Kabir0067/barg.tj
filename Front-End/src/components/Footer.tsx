@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useLanguage } from '@/context/LanguageContext';
 import { Phone, Mail, MapPin, ShieldCheck, Award, Truck, Zap, Headphones, Clock, Navigation, X, ChevronRight } from 'lucide-react';
+import Brand from './Brand';
 import styles from './Footer.module.css';
 
 // Координатаҳои мағоза / Координаты магазина
@@ -28,7 +29,7 @@ export default function Footer() {
     {
       icon: <Truck size={26} />,
       title: lang === 'tj' ? 'Расонидани ройгон' : 'Бесплатная доставка',
-      sub: lang === 'tj' ? 'барои хариди аз 5000 сомонӣ' : 'при заказе от 5000 сомони',
+      sub: lang === 'tj' ? 'барои хариди аз 10000 сомонӣ' : 'при заказе от 10000 сомони',
     },
     {
       icon: <Zap size={26} />,
@@ -71,48 +72,20 @@ export default function Footer() {
             {lang === 'tj' ? 'Шарикони боэътимоди мо' : 'Наши надежные партнеры'}
           </h4>
           <div className={styles.partnersGrid}>
-            <div className={styles.marqueeTrack} aria-hidden="false">
-              <div className={styles.partnerCard}>
-                <Award size={18} className={styles.partnerIcon} />
-                <span>Huaxin Cement</span>
-              </div>
-              <div className={styles.partnerCard}>
-                <Award size={18} className={styles.partnerIcon} />
-                <span>Total Energies</span>
-              </div>
-              <div className={styles.partnerCard}>
-                <Award size={18} className={styles.partnerIcon} />
-                <span>Makita Tools</span>
-              </div>
-              <div className={styles.partnerCard}>
-                <Award size={18} className={styles.partnerIcon} />
-                <span>Bosch Power</span>
-              </div>
-              <div className={styles.partnerCard}>
-                <Award size={18} className={styles.partnerIcon} />
-                <span>Knauf Gypsum</span>
-              </div>
+            <div className={styles.marqueeTrack}>
+              {['Huaxin Cement', 'Total Energies', 'Makita Tools', 'Bosch Power', 'Knauf Gypsum', 'Фаровон', 'Gazprom', 'Alif Bank', 'Sberbank', 'Оби Зулол', 'Yandex'].map((p, i) => (
+                <div key={i} className={styles.partnerCard}>
+                  <Award size={18} className={styles.partnerIcon} />
+                  <span>{p}</span>
+                </div>
+              ))}
               {/* Duplicate for seamless loop */}
-              <div className={styles.partnerCard} aria-hidden="true">
-                <Award size={18} className={styles.partnerIcon} />
-                <span>Huaxin Cement</span>
-              </div>
-              <div className={styles.partnerCard} aria-hidden="true">
-                <Award size={18} className={styles.partnerIcon} />
-                <span>Total Energies</span>
-              </div>
-              <div className={styles.partnerCard} aria-hidden="true">
-                <Award size={18} className={styles.partnerIcon} />
-                <span>Makita Tools</span>
-              </div>
-              <div className={styles.partnerCard} aria-hidden="true">
-                <Award size={18} className={styles.partnerIcon} />
-                <span>Bosch Power</span>
-              </div>
-              <div className={styles.partnerCard} aria-hidden="true">
-                <Award size={18} className={styles.partnerIcon} />
-                <span>Knauf Gypsum</span>
-              </div>
+              {['Huaxin Cement', 'Total Energies', 'Makita Tools', 'Bosch Power', 'Knauf Gypsum', 'Фаровон', 'Gazprom', 'Alif Bank', 'Sberbank', 'Оби Зулол', 'Yandex'].map((p, i) => (
+                <div key={`dup-${i}`} className={styles.partnerCard} aria-hidden="true">
+                  <Award size={18} className={styles.partnerIcon} />
+                  <span>{p}</span>
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -124,10 +97,7 @@ export default function Footer() {
           {/* Col 1: Store Intro */}
           <div className={styles.col}>
             <div className={styles.brand}>
-              <svg className={styles.logoIcon} viewBox="0 0 24 24" fill="currentColor">
-                <path d="M17,8C8,10 5.9,16.17 3.82,21.34L5.71,22L7.5,18C11.24,18 16,15 17,8M3,2C11.5,2 17,5.5 21,12C14,12 9,9.5 3,2Z" />
-              </svg>
-              <span className={styles.logoText}>Barg.tj</span>
+              <Brand size={52} />
             </div>
             <p className={styles.desc}>
               {lang === 'tj' 

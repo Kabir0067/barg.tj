@@ -86,6 +86,7 @@
   padding: 1.25rem 0;
   border-bottom: 1px solid var(--border-light);
   text-align: center;
+  overflow: hidden;
 }
 
 .partnersTitle {
@@ -99,40 +100,48 @@
 
 .partnersGrid {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
+  flex-wrap: nowrap;
+  justify-content: flex-start;
   align-items: center;
-  gap: 0.75rem;
+  overflow: hidden;
+  position: relative;
+}
+
+.marqueeTrack {
+  display: flex;
+  width: max-content;
+  animation: marquee 30s linear infinite;
+  gap: 12px;
+  padding-left: 12px;
+}
+.marqueeTrack:hover {
+  animation-play-state: paused;
 }
 
 .partnerCard {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 14px;
+  gap: 8px;
+  padding: 8px 18px;
   background: var(--bg-card);
   border: 1px solid var(--border-light);
   border-radius: var(--radius-full);
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   font-weight: 700;
   color: var(--text-secondary);
   transition: all 0.2s ease;
+  flex-shrink: 0;
 }
 @media (hover: hover) {
   .partnerCard:hover {
     border-color: var(--brand-primary);
     color: var(--brand-primary);
-    transform: translateY(-1px);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
   }
 }
 
 .partnerIcon { color: var(--brand-primary); }
-
-/* Marquee track — animates only on mobile via media query below */
-.marqueeTrack {
-  display: flex;
-  width: max-content;
-}
 
 @keyframes marquee {
   from { transform: translateX(0); }
@@ -180,22 +189,15 @@
   .trustIcon { width: 38px; height: 38px; }
 
   /* Partners: marquee ticker on mobile */
-  .marqueeTrack { animation: marquee 18s linear infinite; }
-  .partnersSection { display: block; padding: 0.9rem 0; overflow: hidden; }
+  .partnersSection { padding: 0.9rem 0; }
   .partnersTitle { margin-bottom: 0.65rem; font-size: 0.68rem; }
-  .partnersGrid {
-    flex-wrap: nowrap;
-    overflow: hidden;
-    justify-content: flex-start;
-    gap: 0;
-    padding: 0.25rem 0 0.5rem;
-  }
+  
+  .marqueeTrack { gap: 8px; padding-left: 8px; animation: marquee 20s linear infinite; }
+  
   .partnerCard {
-    flex-shrink: 0;
     font-size: 0.75rem;
-    padding: 5px 11px;
-    white-space: nowrap;
-    margin: 0 0.28rem;
+    padding: 6px 14px;
+    gap: 6px;
   }
 
   .socials { gap: 6px; }

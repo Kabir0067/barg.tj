@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git -C \"/c/Users/Kabir/Desktop/Barg.tj\" ls-files Front-End/public/categories/)",
+      "Bash(xargs grep -l \"TELEGRAM\\\\|telegram\")",
+      "Bash(xargs cat)",
+      "Bash(grep \"\\\\.py$\")",
+      "Bash(git commit -m ' *)",
+      "Bash(python -c ' *)",
+      "Bash(python3 -c ' *)",
+      "Read(//c/Users/Kabir/.ssh/**)",
+      "Read(//c/Users/Kabir/**)",
+      "Read(//c/Users/Kabir/Desktop/**)",
+      "Bash(git commit *)"
+    ]
+  }
+}

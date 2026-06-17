@@ -110,7 +110,8 @@ def handle_telegram_callback(data):
 
     if order.status == OrderStatus.NEW:
         order.status = OrderStatus.ACCEPTED
-        order.save(update_fields=['status'])
+        order.accepted_via = 'telegram'
+        order.save()  # full save — triggers accepted_at, etc.
 
         accepted_keyboard = {
             "inline_keyboard": [[

@@ -43,6 +43,9 @@ yarn-error.log*
 # ---------- Local tooling ----------
 .claude/settings.local.json
 
+# ---------- Stray nested clone (not part of the project) ----------
+/Barg.tj/
+
 # ---------- Editors / OS ----------
 .vscode/
 .idea/

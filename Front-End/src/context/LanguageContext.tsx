@@ -24,7 +24,7 @@ const translations: Record<Language, Record<string, string>> = {
     home_desc: 'Барои харид кардан сабтином шарт нест. Мо маҳсулотро бо нархи арзон ва дар муддати кӯтоҳ мустақиман ба хонаатон мерасонем.',
     home_btn_explore: 'Дидани маҳсулот',
     home_feat_1_title: 'Расонидани зуд',
-    home_feat_1_desc: 'Агар маблағи харид аз 5000 сомонӣ зиёд бошад, расонидан тамоман ройгон аст.',
+    home_feat_1_desc: 'Агар маблағи харид аз 10000 сомонӣ зиёд бошад, расонидан тамоман ройгон аст.',
     home_feat_2_title: 'Кафолати сифат',
     home_feat_2_desc: 'Мо танҳо бо маҳсулоти босифат ва корхонаҳои боэътимод кор мекунем.',
     home_feat_3_title: 'Харид бе ташвиш',
@@ -95,7 +95,7 @@ const translations: Record<Language, Record<string, string>> = {
     prod_title: 'Ҳар чизи лозима барои хонаи шумо',
     prod_desc: 'Аз сементу хишт то дигар маҳсулот — мавоҳои босифатро бо нархи дастрас харидори кунед, мо зуд ва бо эҳтиёт то хонаатон мерасонем.',
     prod_hero_badge: '✦ Сифати кафолатнок ва нархи арзон',
-    prod_hero_delivery: 'Расонидан ройгон аз 5000 сомонӣ',
+    prod_hero_delivery: 'Расонидан ройгон аз 10000 сомонӣ',
     prod_hero_quality: 'Сифати кафолатнок',
     prod_hero_count: 'намуди мол',
     prod_loading: 'Маҳсулот боргирӣ шуда истодааст...',
@@ -243,7 +243,16 @@ const translations: Record<Language, Record<string, string>> = {
     sale_success: 'Фурӯш сабт шуд! Захира навсозӣ шуд.',
     sale_out: 'Тамом шуд',
     sale_clear: 'Тоза кардан',
-    sale_in_stock: 'Дар анбор'
+    sale_in_stock: 'Дар анбор',
+
+    // Notification bell
+    notif_title: 'Огоҳиҳо',
+    notif_empty: 'Закази нав нест',
+    notif_new_order: 'Закази нав!',
+    notif_accept: 'Қабул',
+    notif_reject: 'Рад',
+    notif_from: 'аз',
+    notif_today: 'Имрӯз',
   },
   ru: {
     // Navbar
@@ -259,7 +268,7 @@ const translations: Record<Language, Record<string, string>> = {
     home_desc: 'Для покупки не нужна регистрация. Мы быстро доставим выбранные товары прямо к вашему дому.',
     home_btn_explore: 'Смотреть каталог',
     home_feat_1_title: 'Быстрая доставка',
-    home_feat_1_desc: 'При заказе товаров на сумму от 5000 сомони доставка абсолютно бесплатна.',
+    home_feat_1_desc: 'При заказе товаров на сумму от 10000 сомони доставка абсолютно бесплатна.',
     home_feat_2_title: 'Гарантия качества',
     home_feat_2_desc: 'Мы работаем только с качественными товарами и надежными поставщиками.',
     home_feat_3_title: 'Покупки без забот',
@@ -330,7 +339,7 @@ const translations: Record<Language, Record<string, string>> = {
     prod_title: 'Всё необходимое для вашего дома',
     prod_desc: 'От цемента и кирпича до красок и инструментов — выбирайте качественные материалы по честным ценам, а мы быстро и бережно доставим их к вашему порогу.',
     prod_hero_badge: '✦ Гарантия качества и честные цены',
-    prod_hero_delivery: 'Бесплатная доставка от 5000 сомони',
+    prod_hero_delivery: 'Бесплатная доставка от 10000 сомони',
     prod_hero_quality: 'Гарантия качества',
     prod_hero_count: 'видов товаров',
     prod_loading: 'Товары загружаются...',
@@ -478,7 +487,16 @@ const translations: Record<Language, Record<string, string>> = {
     sale_success: 'Продажа записана! Остаток обновлён.',
     sale_out: 'Нет в наличии',
     sale_clear: 'Очистить',
-    sale_in_stock: 'На складе'
+    sale_in_stock: 'На складе',
+
+    // Notification bell
+    notif_title: 'Уведомления',
+    notif_empty: 'Новых заказов нет',
+    notif_new_order: 'Новый заказ!',
+    notif_accept: 'Принять',
+    notif_reject: 'Отклонить',
+    notif_from: 'от',
+    notif_today: 'Сегодня',
   }
 };
 

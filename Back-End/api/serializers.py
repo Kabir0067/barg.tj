@@ -133,6 +133,7 @@ class OrderReadSerializer(serializers.ModelSerializer):
             'subtotal', 'delivery_fee', 'total',
             'items', 'notes',
             'assigned_worker', 'assigned_worker_name',
+            'accepted_via',
             'created_at', 'accepted_at', 'delivering_at', 'completed_at',
         ]
 
@@ -244,10 +245,11 @@ class CreateOrderSerializer(serializers.Serializer):
 class UpdateOrderStatusSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
-        fields = ['status', 'assigned_worker']
+        fields = ['status', 'assigned_worker', 'accepted_via']
         extra_kwargs = {
             'status': {'required': False},
             'assigned_worker': {'required': False, 'allow_null': True},
+            'accepted_via': {'required': False},
         }
 
 

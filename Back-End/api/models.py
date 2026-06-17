@@ -298,7 +298,19 @@ class Order(models.Model):
     accepted_at = models.DateTimeField('Қабул шуд', null=True, blank=True)
     delivering_at = models.DateTimeField('Дар роҳ', null=True, blank=True)
     completed_at = models.DateTimeField('Анҷом ёфт', null=True, blank=True)
-    
+
+    ACCEPTED_VIA_CHOICES = [
+        ('site', 'Сайт'),
+        ('telegram', 'Telegram'),
+    ]
+    accepted_via = models.CharField(
+        'Қабул шуд тавассути',
+        max_length=10,
+        choices=ACCEPTED_VIA_CHOICES,
+        default='site',
+        blank=True,
+    )
+
     assigned_worker = models.ForeignKey(
         Customer,
         on_delete=models.SET_NULL,
@@ -353,7 +365,7 @@ class Order(models.Model):
 
     def calculate_total(self):
         self.subtotal = sum(item.subtotal for item in self.items.all())
-        if self.subtotal >= 5000:
+        if self.subtotal >= 10000:
             self.delivery_fee = Decimal('0')
         else:
             self.delivery_fee = Decimal('20.00')

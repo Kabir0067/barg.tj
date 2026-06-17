@@ -1,0 +1,333 @@
+/* ============================================================
+   NotificationBell — Premium order notification system
+   Glassmorphism dropdown with pulsing badge and card actions.
+   ============================================================ */
+
+.wrapper {
+  position: relative;
+  flex-shrink: 0;
+}
+
+/* ---- Bell button ---- */
+.bellBtn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-light);
+  background-color: var(--bg-subtle, var(--bg-main));
+  color: var(--text-secondary);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background-color var(--dur-fast, 140ms) var(--ease-standard),
+              color var(--dur-fast, 140ms) var(--ease-standard),
+              border-color var(--dur-fast, 140ms) var(--ease-standard),
+              transform var(--dur-fast, 140ms) var(--ease-out-quart);
+}
+.bellBtn:hover {
+  background-color: var(--brand-tint);
+  color: var(--brand-primary);
+  border-color: color-mix(in srgb, var(--brand-primary) 35%, transparent);
+  transform: translateY(-1px);
+}
+.bellBtn:active { transform: translateY(0); }
+
+/* Active state — has pending orders */
+.bellActive {
+  color: var(--brand-primary);
+  border-color: color-mix(in srgb, var(--brand-primary) 30%, transparent);
+  animation: bellShake 4s ease-in-out infinite;
+}
+
+@keyframes bellShake {
+  0%, 90%, 100% { transform: rotate(0deg); }
+  92% { transform: rotate(8deg); }
+  94% { transform: rotate(-8deg); }
+  96% { transform: rotate(5deg); }
+  98% { transform: rotate(-3deg); }
+}
+
+/* ---- Badge ---- */
+.badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 5px;
+  background: var(--error);
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 800;
+  border-radius: var(--radius-full);
+  box-shadow: 0 0 0 2px var(--bg-card), var(--shadow-sm);
+  line-height: 1;
+  animation: badgePop 0.35s var(--ease-spring) both;
+}
+
+@keyframes badgePop {
+  from { transform: scale(0); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+/* Pulse ring on badge */
+.badge::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: var(--radius-full);
+  box-shadow: 0 0 0 0 var(--error);
+  animation: badgePulse 2.5s ease-out infinite;
+}
+@keyframes badgePulse {
+  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--error) 50%, transparent); }
+  70% { box-shadow: 0 0 0 8px transparent; }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
+
+/* ---- Dropdown ---- */
+.dropdown {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: -40px;
+  width: 360px;
+  max-height: 480px;
+  background: var(--bg-elevated, var(--bg-card));
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-xl), 0 8px 32px rgba(0, 0, 0, 0.12);
+  z-index: var(--z-overlay, 1000);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transform-origin: top right;
+  animation: dropIn 0.25s var(--ease-out-quart);
+}
+
+@keyframes dropIn {
+  from { opacity: 0; transform: translateY(-8px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Header */
+.dropHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border-light);
+  background: linear-gradient(135deg, var(--brand-tint) 0%, transparent 60%);
+  flex-shrink: 0;
+}
+.dropTitle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+.dropTitle svg { color: var(--brand-primary); }
+.dropToday {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--brand-primary);
+  background: var(--brand-tint-strong);
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+}
+.dropClose {
+  margin-left: auto;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-md);
+  color: var(--text-tertiary);
+  flex-shrink: 0;
+}
+.dropClose:hover { background: var(--bg-hover); color: var(--text-primary); }
+
+/* Body (scrollable) */
+.dropBody {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Empty state */
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 2.5rem 1rem;
+  color: var(--text-secondary);
+  text-align: center;
+}
+.emptyState svg { opacity: 0.3; color: var(--text-tertiary); }
+.emptyState p { font-size: 0.88rem; font-weight: 600; }
+
+/* ---- Notification card ---- */
+.notifCard {
+  background: var(--bg-subtle, var(--bg-main));
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: border-color var(--dur-fast), box-shadow var(--dur-fast);
+  animation: cardSlide 0.3s var(--ease-out-quart) both;
+}
+.notifCard:hover {
+  border-color: color-mix(in srgb, var(--brand-primary) 30%, transparent);
+  box-shadow: var(--shadow-sm);
+}
+.notifBusy { opacity: 0.55; pointer-events: none; }
+
+@keyframes cardSlide {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.notifTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.notifNumber {
+  font-weight: 800;
+  font-size: 0.88rem;
+  color: var(--brand-primary);
+}
+.notifTime {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-tertiary);
+}
+
+.notifMeta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.notifCustomer {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.notifCustomer svg { color: var(--text-tertiary); flex-shrink: 0; }
+.notifTotal {
+  font-weight: 800;
+  font-size: 0.88rem;
+  color: var(--brand-dark);
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.notifItems {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.notifItem {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background: var(--bg-card);
+  padding: 2px 7px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-light);
+  white-space: nowrap;
+}
+.notifMore {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--brand-primary);
+  padding: 2px 7px;
+}
+
+/* Action buttons */
+.notifActions {
+  display: flex;
+  gap: 6px;
+}
+.acceptBtn,
+.rejectBtn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 8px 10px;
+  border-radius: var(--radius-md);
+  font-weight: 700;
+  font-size: 0.78rem;
+  color: #fff;
+  transition: filter var(--dur-fast), transform var(--dur-fast);
+  min-height: 36px;
+}
+.acceptBtn:hover:not(:disabled),
+.rejectBtn:hover:not(:disabled) {
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+}
+.acceptBtn:disabled,
+.rejectBtn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.acceptBtn {
+  background: var(--brand-primary);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--brand-primary) 30%, transparent);
+}
+.rejectBtn {
+  background: transparent;
+  color: var(--error);
+  border: 1px solid color-mix(in srgb, var(--error) 40%, transparent);
+  flex: 0 0 auto;
+}
+.rejectBtn:hover:not(:disabled) {
+  background: var(--error-bg);
+}
+
+/* ---- Mobile responsive ---- */
+@media (max-width: 480px) {
+  .dropdown {
+    position: fixed;
+    top: auto;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    max-height: 85vh;
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+    animation: slideUp var(--dur-base) var(--ease-out-quart);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bellActive, .badge, .badge::after,
+  .dropdown, .notifCard {
+    animation: none !important;
+  }
+}

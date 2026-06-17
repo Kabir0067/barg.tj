@@ -87,6 +87,8 @@ class OrderViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         if self.action == 'create':
             return [AllowAny()]
+        if self.action == 'destroy':
+            return [IsAdminUser()]
         return [permissions.IsAuthenticated()]
 
     def get_queryset(self):
@@ -101,6 +103,24 @@ class OrderViewSet(viewsets.ModelViewSet):
         order = serializer.save()
         read_serializer = OrderReadSerializer(order, context={'request': request})
         return Response(read_serializer.data, status=status.HTTP_201_CREATED)
+
+    @action(detail=False, methods=['get'], permission_classes=[IsAdminUser])
+    def pending_today(self, request):
+        """
+        GET /api/orders/pending_today/
+        Заказҳои имрӯзаи қабулнашуда — барои занги огоҳӣ дар панели админ.
+        Заказҳоеро ки аз Telegram қабул шудаанд, нишон намедиҳад.
+        """
+        from django.utils import timezone
+        today = timezone.localdate()
+        qs = Order.objects.filter(
+            status='NEW',
+            created_at__date=today,
+        ).exclude(
+            accepted_via='telegram',
+        ).prefetch_related('items__product').select_related('customer', 'assigned_worker').order_by('-created_at')
+        serializer = OrderReadSerializer(qs, many=True, context={'request': request})
+        return Response(serializer.data)
 
     @action(detail=False, methods=['post'], permission_classes=[IsAdminUser])
     def quick_sale(self, request):

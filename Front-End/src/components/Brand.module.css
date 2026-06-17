@@ -1,0 +1,37 @@
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  flex-shrink: 0;
+  transition: transform var(--dur-fast) var(--ease-out-quart),
+              filter var(--dur-fast) var(--ease-standard);
+}
+
+.brand:hover {
+  transform: translateY(-1px);
+  filter: drop-shadow(0 4px 10px rgba(16, 185, 129, 0.25));
+}
+
+.mark {
+  display: inline-flex;
+  align-items: center;
+  line-height: 0;
+}
+
+/* NOTE: do NOT set `display` on `.mark img` — an element+class selector (0,1,1)
+   would outrank the variant classes below (0,1,0) and force BOTH variants
+   visible (the doubled-logo bug). Visibility is owned solely by the classes. */
+.mark img {
+  object-fit: contain;
+}
+
+/* Explicit single-variant instances */
+.solo { display: block; }
+
+/* Auto variant: render both, show only the one matching the active theme.
+   Selectors are scoped to .mark img so they always beat any base img rule. */
+.mark img.light { display: block; }
+.mark img.dark { display: none; }
+
+:global(html[data-theme="dark"]) .mark img.light { display: none; }
+:global(html[data-theme="dark"]) .mark img.dark { display: block; }

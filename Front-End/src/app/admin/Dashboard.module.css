@@ -14,6 +14,7 @@
   letter-spacing: -0.04em;
   background: linear-gradient(135deg, var(--text-primary) 30%, var(--brand-primary) 100%);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
@@ -34,38 +35,48 @@
 }
 
 .card {
-  background: var(--bg-card);
+  background: color-mix(in srgb, var(--bg-card) 90%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   padding: 1.75rem;
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--border-light);
-  box-shadow: var(--shadow-sm);
+  border-radius: 20px;
+  border: 1px solid color-mix(in srgb, var(--border-light) 80%, transparent);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
   display: flex;
   flex-direction: column;
   position: relative;
   overflow: hidden;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-.card::before {
-  content: '';
+.card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.08);
+  border-color: color-mix(in srgb, var(--brand-primary) 50%, transparent);
+}
+
+/* ===== Always-on tinted accent strip (KPI differentiation) ===== */
+.accentStrip {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 4px;
-  background: transparent;
-  transition: background 0.3s ease;
+  background: var(--gray-300);
+  transition: height var(--dur-fast) var(--ease-standard, ease);
 }
+.card:hover .accentStrip { height: 6px; }
 
-.card:hover {
-  transform: translateY(-5px);
-  box-shadow: var(--shadow-md);
-  border-color: var(--brand-primary);
-}
+.accentGreen .accentStrip { background: linear-gradient(90deg, var(--success), color-mix(in srgb, var(--success) 55%, transparent)); }
+.accentBlue .accentStrip { background: linear-gradient(90deg, var(--info), color-mix(in srgb, var(--info) 55%, transparent)); }
+.accentPurple .accentStrip { background: linear-gradient(90deg, #8b5cf6, color-mix(in srgb, #8b5cf6 55%, transparent)); }
+.accentRed .accentStrip { background: linear-gradient(90deg, var(--error), color-mix(in srgb, var(--error) 55%, transparent)); }
 
-.card:hover::before {
-  background: var(--brand-gradient);
-}
+/* Subtle tinted card background to match the accent */
+.accentGreen { background: linear-gradient(180deg, color-mix(in srgb, var(--success) 5%, var(--bg-card)) 0%, var(--bg-card) 60%); }
+.accentBlue { background: linear-gradient(180deg, color-mix(in srgb, var(--info) 5%, var(--bg-card)) 0%, var(--bg-card) 60%); }
+.accentPurple { background: linear-gradient(180deg, color-mix(in srgb, #8b5cf6 5%, var(--bg-card)) 0%, var(--bg-card) 60%); }
+.accentRed { background: linear-gradient(180deg, color-mix(in srgb, var(--error) 5%, var(--bg-card)) 0%, var(--bg-card) 60%); }
 
 .cardHeader {
   display: flex;
@@ -92,10 +103,30 @@
   flex-shrink: 0;
 }
 
-.iconGreen { background: rgba(34, 197, 94, 0.12); color: var(--success); }
-.iconBlue { background: rgba(59, 130, 246, 0.12); color: #3b82f6; }
-.iconPurple { background: rgba(139, 92, 246, 0.12); color: #8b5cf6; }
-.iconRed { background: rgba(239, 68, 68, 0.12); color: var(--error); }
+.iconGreen { background: var(--success-bg); color: var(--success); }
+.iconBlue { background: var(--info-bg); color: var(--info); }
+.iconPurple { background: color-mix(in srgb, #8b5cf6 14%, transparent); color: #8b5cf6; }
+.iconRed { background: var(--error-bg); color: var(--error); }
+.iconOrange { background: var(--warning-bg); color: var(--warning); }
+.iconNeutral { background: var(--bg-hover); color: var(--text-secondary); }
+
+/* ===== KPI sparkline row ===== */
+.sparkRow {
+  height: 32px;
+  margin: 0.25rem 0 0.25rem;
+  display: flex;
+  align-items: center;
+}
+.stockMini {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+.stockBadge {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
 
 .cardValue {
   font-size: 2rem;
@@ -163,12 +194,20 @@
 }
 
 .summaryCard {
-  background: var(--bg-card);
-  padding: 2rem;
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--border-light);
-  box-shadow: var(--shadow-sm);
+  background: color-mix(in srgb, var(--bg-card) 90%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  padding: 2.2rem;
+  border-radius: 24px;
+  border: 1px solid color-mix(in srgb, var(--border-light) 80%, transparent);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
   position: relative;
+  transition: transform 0.4s ease, box-shadow 0.4s ease;
+}
+
+.summaryCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.08);
 }
 
 .summaryCard::before {
@@ -222,19 +261,74 @@
   font-weight: 700;
 }
 
-.loading, .error {
+/* ===== Skeletons (hold layout while loading) ===== */
+.skTitle { height: 38px; width: 240px; max-width: 60%; border-radius: var(--radius-md); }
+.skToolbar { height: 42px; width: 280px; max-width: 100%; border-radius: var(--radius-full); }
+.skLine { height: 14px; border-radius: var(--radius-full); }
+.skIcon { width: 44px; height: 44px; border-radius: var(--radius-md); flex-shrink: 0; }
+.skValue { height: 30px; width: 65%; border-radius: var(--radius-sm); margin-bottom: 0.75rem; }
+.skSpark { height: 32px; width: 100%; border-radius: var(--radius-sm); }
+.skChart { height: 360px; border-radius: var(--radius-lg); }
+.skPanel { height: 280px; border-radius: var(--radius-lg); }
+
+/* ===== Error state with retry ===== */
+.errorState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  min-height: 50vh;
+  gap: 0.75rem;
+  padding: 2rem;
+}
+.errorIcon {
+  width: 72px;
+  height: 72px;
+  border-radius: var(--radius-full);
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 50vh;
-  font-size: 1.2rem;
-  color: var(--text-secondary);
-  font-weight: 600;
-}
-
-.error {
+  background: var(--error-bg);
   color: var(--error);
+  margin-bottom: 0.5rem;
 }
+.errorTitle {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+.errorSub {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  max-width: 360px;
+}
+.retryBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 0.5rem;
+  padding: 11px 22px;
+  min-height: 44px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #fff;
+  background: var(--brand-gradient);
+  border-radius: var(--radius-full);
+  box-shadow: var(--shadow-glow-soft);
+  transition: transform var(--dur-base) var(--ease-out-quart, ease), box-shadow var(--dur-base) ease;
+}
+.retryBtn:hover { transform: translateY(-2px); box-shadow: var(--shadow-glow); }
+.retryBtn:active { transform: scale(0.97); }
+
+/* ===== Refreshing indicator (range switch / silent refetch) ===== */
+.refreshing {
+  display: inline-flex;
+  align-items: center;
+  color: var(--brand-primary);
+}
+.refreshing svg { animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
 
 .unit {
   font-size: 1rem;
@@ -393,6 +487,9 @@
   font-size: 0.85rem;
   border-radius: 50%;
 }
+.rankGold { background: linear-gradient(135deg, #fde68a, #f59e0b); color: #7c4a03; }
+.rankSilver { background: linear-gradient(135deg, #e5e7eb, #9ca3af); color: #374151; }
+.rankBronze { background: linear-gradient(135deg, #fcd9b6, #d97706); color: #6b3a07; }
 .customerInfo {
   display: flex;
   flex-direction: column;
@@ -434,12 +531,13 @@
   .sectionTitle { font-size: 1.15rem; margin-top: 0.5rem; }
 
   .grid { grid-template-columns: repeat(2, 1fr); gap: 0.85rem; }
-  .card { padding: 1.1rem; }
-  .cardValue { font-size: 1.5rem; margin-bottom: 0.4rem; }
+  .card { padding: 1.25rem; border-radius: 16px; }
+  .cardValue { font-size: 1.6rem; margin-bottom: 0.4rem; }
   .cardTitle { font-size: 0.78rem; }
   .iconWrapper { width: 36px; height: 36px; }
 
   .list li { font-size: 0.85rem; padding: 0.4rem 0; }
+  .sparkRow { height: 26px; }
 
   .headerRow { gap: 0.75rem; }
   .toolbar { width: 100%; justify-content: space-between; gap: 0.5rem; }
@@ -456,9 +554,10 @@
 }
 
 @media (max-width: 480px) {
-  .grid { grid-template-columns: 1fr 1fr; gap: 0.65rem; }
-  .card { padding: 0.9rem; border-radius: var(--radius-md); }
-  .cardValue { font-size: 1.3rem; }
+  .grid { grid-template-columns: 1fr; gap: 1rem; }
+  .card { padding: 1.25rem; border-radius: 16px; }
+  .cardValue { font-size: 1.6rem; }
+  .sparkRow { height: 30px; }
   .cardFooter { font-size: 0.75rem; padding-top: 0.65rem; flex-direction: column; align-items: flex-start; gap: 4px; }
 
   .toolbar { flex-direction: column; align-items: stretch; }

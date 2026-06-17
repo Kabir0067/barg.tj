@@ -1,0 +1,152 @@
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-xs);
+  transition: transform var(--dur-base) var(--ease-out-quart),
+              box-shadow var(--dur-base) var(--ease-out-quart),
+              border-color var(--dur-base) var(--ease-standard);
+}
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+  border-color: color-mix(in srgb, var(--brand-primary) 35%, var(--border-light));
+}
+.isOut { opacity: 0.86; }
+
+.imgLink { display: block; }
+
+.imgBox {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  background: var(--bg-subtle);
+  overflow: hidden;
+}
+
+.imgSkeleton { position: absolute; inset: 0; }
+
+.img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transform: scale(1.02);
+  transition: opacity var(--dur-slow) var(--ease-standard), transform var(--dur-slow) var(--ease-out-quart);
+}
+.imgShown { opacity: 1; transform: scale(1); }
+.card:hover .img { transform: scale(1.06); }
+
+.noImg {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-tertiary);
+  background: var(--bg-subtle);
+}
+
+.badges {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-start;
+}
+.badge {
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  padding: 4px 9px;
+  border-radius: var(--radius-full);
+  text-transform: uppercase;
+  backdrop-filter: blur(6px);
+  box-shadow: var(--shadow-sm);
+}
+.badgeNew { background: var(--brand-gradient); color: #fff; }
+.badgeOut { background: color-mix(in srgb, var(--error) 92%, #000); color: #fff; }
+.badgeLow { background: color-mix(in srgb, var(--warning) 92%, #000); color: #fff; }
+
+.info {
+  padding: 0.9rem 1rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.eyebrow {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--brand-primary);
+}
+
+.nameLink { display: block; }
+.name {
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-height: 2.7em;
+  transition: color var(--dur-fast) var(--ease-standard);
+}
+.nameLink:hover .name { color: var(--brand-primary); }
+
+.bottom {
+  margin-top: auto;
+  padding-top: 0.65rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.priceWrap { display: flex; align-items: baseline; flex-wrap: wrap; gap: 2px 4px; min-width: 0; }
+.price { font-size: 1.08rem; font-weight: 800; color: var(--text-primary); white-space: nowrap; }
+.unit { font-size: 0.78rem; color: var(--text-tertiary); font-weight: 600; white-space: nowrap; }
+
+.addBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  flex-shrink: 0;
+  height: 40px;
+  min-width: 40px;
+  padding: 0 12px;
+  border-radius: var(--radius-sm);
+  background: var(--brand-gradient);
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.85rem;
+  box-shadow: var(--shadow-glow-soft);
+  transition: transform var(--dur-fast) var(--ease-out-quart), filter var(--dur-fast) var(--ease-standard), background var(--dur-base) var(--ease-standard);
+}
+.addBtn:hover { transform: translateY(-2px); filter: brightness(1.06); }
+.addBtn:active { transform: scale(0.95); }
+.addBtn:disabled { background: var(--gray-400); box-shadow: none; filter: none; }
+.addBtnDone { background: var(--success); }
+.addBtnWide { min-width: 0; }
+
+.addBtnLabel { white-space: nowrap; }
+
+/* On small cards/phones, collapse the label to an icon-only button */
+@media (max-width: 600px) {
+  .addBtnLabel { display: none; }
+  .addBtn { padding: 0; width: 42px; }
+  .info { padding: 0.75rem 0.8rem 0.85rem; }
+  .name { font-size: 0.9rem; }
+  .price { font-size: 1rem; }
+}

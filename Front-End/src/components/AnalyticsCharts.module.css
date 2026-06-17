@@ -1,4 +1,67 @@
-/* ===== Revenue area chart ===== */
+/* ===================================================================== */
+/*  Theme-aware chart palette — centralized CSS variables                 */
+/*  (CSS Modules don't scope :root, so we expose these globally.)         */
+/* ===================================================================== */
+:global(:root) {
+  --chart-1: #10b981; /* revenue / brand */
+  --chart-2: #3b82f6; /* profit / info  */
+  --chart-3: #8b5cf6;
+  --chart-4: #f97316;
+  --chart-5: #eab308;
+  --chart-6: #ec4899;
+  --chart-7: #14b8a6;
+  --chart-8: #64748b;
+}
+:global([data-theme="dark"]) {
+  --chart-1: #34d399;
+  --chart-2: #60a5fa;
+  --chart-3: #a78bfa;
+  --chart-4: #fb923c;
+  --chart-5: #facc15;
+  --chart-6: #f472b6;
+  --chart-7: #2dd4bf;
+  --chart-8: #94a3b8;
+}
+
+/* ===================================================================== */
+/*  Sparkline (KPI cards)                                                 */
+/* ===================================================================== */
+.spark {
+  width: 100%;
+  height: 32px;
+  display: block;
+  overflow: visible;
+}
+.spark_brand { color: var(--chart-1); }
+.spark_info { color: var(--chart-2); }
+.spark_violet { color: var(--chart-3); }
+.spark_danger { color: var(--error); }
+
+.sparkArea { opacity: 0.9; }
+.sparkLine {
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+.sparkDot {
+  fill: currentColor;
+  stroke: var(--bg-card);
+  stroke-width: 1.5;
+}
+.sparkDraw {
+  stroke-dasharray: 160;
+  stroke-dashoffset: 160;
+  animation: sparkDraw 0.9s var(--ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1)) forwards;
+}
+@keyframes sparkDraw {
+  to { stroke-dashoffset: 0; }
+}
+
+/* ===================================================================== */
+/*  Revenue area chart                                                    */
+/* ===================================================================== */
 .chartWrap {
   width: 100%;
 }
@@ -21,15 +84,22 @@
   height: 10px;
   border-radius: 50%;
   display: inline-block;
+  flex-shrink: 0;
 }
-.dotRevenue { background: var(--brand-primary); }
-.dotProfit { background: #3b82f6; }
+.dotRevenue { background: var(--chart-1); }
+.dotProfit { background: var(--chart-2); }
+
+.chartCanvas {
+  position: relative;
+  width: 100%;
+}
 
 .svg {
   width: 100%;
   height: auto;
   display: block;
   overflow: visible;
+  touch-action: pan-y;
 }
 
 .grid {
@@ -38,34 +108,138 @@
   stroke-dasharray: 4 6;
 }
 
+.yLabel {
+  fill: var(--text-tertiary, var(--text-secondary));
+  font-size: 10px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
 .revStroke {
-  stroke: var(--brand-primary);
+  stroke: var(--chart-1);
   stroke-width: 2.5;
   stroke-linejoin: round;
   stroke-linecap: round;
   vector-effect: non-scaling-stroke;
 }
 .profitStroke {
-  stroke: #3b82f6;
+  stroke: var(--chart-2);
   stroke-width: 2;
   stroke-dasharray: 5 4;
   stroke-linejoin: round;
+  stroke-linecap: round;
   vector-effect: non-scaling-stroke;
 }
 
-.revDot {
-  fill: var(--bg-card);
-  stroke: var(--brand-primary);
-  stroke-width: 2;
-  cursor: pointer;
-  transition: r 0.15s ease;
+/* Animated draw-in (path length set via --dash inline) */
+.drawIn {
+  stroke-dasharray: var(--dash);
+  stroke-dashoffset: var(--dash);
+  animation: drawLine 1.1s var(--ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1)) forwards;
 }
-.revDot:hover { r: 6; }
+.drawInDelay {
+  /* keep the dashed pattern after draw: animate dashoffset only */
+  stroke-dashoffset: var(--dash);
+  animation: drawDashedLine 1.2s 0.18s var(--ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1)) forwards;
+  opacity: 0;
+}
+@keyframes drawLine {
+  from { stroke-dashoffset: var(--dash); }
+  to { stroke-dashoffset: 0; }
+}
+@keyframes drawDashedLine {
+  from { stroke-dashoffset: var(--dash); opacity: 1; }
+  to { stroke-dashoffset: 0; opacity: 1; }
+}
+
+.areaFade {
+  opacity: 0;
+  animation: fadeArea 0.9s 0.5s ease-out forwards;
+}
+@keyframes fadeArea {
+  to { opacity: 1; }
+}
+
+.profitDot {
+  fill: var(--bg-card);
+  stroke: var(--chart-2);
+  stroke-width: 1.6;
+}
+.dotFade {
+  opacity: 0;
+  animation: fadeArea 0.5s 0.9s ease-out forwards;
+}
+
+.crosshair {
+  stroke: var(--text-tertiary, var(--text-secondary));
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+  opacity: 0.6;
+}
+.revDotActive {
+  fill: var(--bg-card);
+  stroke: var(--chart-1);
+  stroke-width: 3;
+  filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.18));
+}
+.profitDotActive {
+  fill: var(--bg-card);
+  stroke: var(--chart-2);
+  stroke-width: 2.5;
+}
 
 .axisLabel {
   fill: var(--text-secondary);
   font-size: 11px;
   font-weight: 500;
+}
+
+/* HTML crosshair tooltip */
+.tooltip {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  pointer-events: none;
+  background: var(--bg-elevated, var(--bg-card));
+  border: 1px solid var(--border-strong, var(--border-light));
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  padding: 0.5rem 0.65rem;
+  min-width: 130px;
+  z-index: 5;
+  animation: tipIn 0.12s ease-out;
+}
+@keyframes tipIn {
+  from { opacity: 0; transform: translate(-50%, calc(-100% + 4px)); }
+  to { opacity: 1; transform: translate(-50%, -100%); }
+}
+.tipLabel {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.4rem;
+  padding-bottom: 0.3rem;
+  border-bottom: 1px solid var(--border-light);
+}
+.tipRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 0.8rem;
+  margin-top: 3px;
+}
+.tipRow span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-secondary);
+}
+.tipRow strong {
+  color: var(--text-primary);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
 }
 
 .empty {
@@ -77,7 +251,9 @@
   font-size: 1.5rem;
 }
 
-/* ===== Bar list ===== */
+/* ===================================================================== */
+/*  Bar list                                                             */
+/* ===================================================================== */
 .barList {
   display: flex;
   flex-direction: column;
@@ -112,6 +288,7 @@
   font-weight: 800;
   color: var(--brand-dark);
   white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
 .barTrack {
   width: 100%;
@@ -124,34 +301,46 @@
   height: 100%;
   background: var(--brand-gradient);
   border-radius: var(--radius-full);
-  transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: barGrow 0.7s var(--ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1)) backwards;
+  animation-delay: calc(var(--i, 0) * 70ms);
+}
+@keyframes barGrow {
+  from { transform: scaleX(0); transform-origin: left; }
+  to { transform: scaleX(1); transform-origin: left; }
 }
 .barSub {
   font-size: 0.78rem;
   color: var(--text-secondary);
 }
 
-/* ===== Donut ===== */
+/* ===================================================================== */
+/*  Donut                                                                */
+/* ===================================================================== */
 .donutWrap {
   display: flex;
   align-items: center;
   gap: 1.5rem;
   flex-wrap: wrap;
 }
+.donutSvgWrap {
+  flex-shrink: 0;
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.06));
+}
 .donutSvg {
   width: 180px;
   height: 180px;
-  flex-shrink: 0;
+  display: block;
 }
 .donutSeg {
-  transition: stroke-width 0.2s ease;
   cursor: pointer;
+  transition: stroke-dasharray 0.9s var(--ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1)),
+              stroke-width 0.2s ease;
 }
-.donutSeg:hover { stroke-width: 30; }
 .donutTotal {
   fill: var(--text-primary);
   font-size: 22px;
   font-weight: 900;
+  font-variant-numeric: tabular-nums;
 }
 .donutCenter {
   fill: var(--text-secondary);
@@ -163,7 +352,7 @@
 .donutLegend {
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
+  gap: 0.4rem;
   flex: 1;
   min-width: 180px;
 }
@@ -172,6 +361,14 @@
   align-items: center;
   gap: 8px;
   font-size: 0.88rem;
+  padding: 4px 6px;
+  border-radius: var(--radius-sm);
+  cursor: default;
+  transition: background 0.18s ease;
+}
+.donutLegendItem:hover,
+.legendActive {
+  background: var(--bg-hover, var(--bg-main));
 }
 .donutLegendItem i {
   width: 12px;
@@ -190,8 +387,101 @@
 .donutLegendItem strong {
   color: var(--text-secondary);
   font-weight: 700;
+  font-variant-numeric: tabular-nums;
 }
+
+/* ===================================================================== */
+/*  Status bar (order status distribution)                               */
+/* ===================================================================== */
+.statusWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+.statusBar {
+  display: flex;
+  width: 100%;
+  height: 18px;
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  background: var(--bg-main);
+  box-shadow: inset 0 0 0 1px var(--border-light);
+}
+.statusSeg {
+  height: 100%;
+  transition: width 0.9s var(--ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1));
+  min-width: 0;
+}
+.statusSeg:first-child { border-top-left-radius: var(--radius-full); border-bottom-left-radius: var(--radius-full); }
+.statusSeg:last-child { border-top-right-radius: var(--radius-full); border-bottom-right-radius: var(--radius-full); }
+.statusEmpty {
+  width: 100%;
+  height: 100%;
+  background: repeating-linear-gradient(
+    45deg,
+    var(--border-light),
+    var(--border-light) 8px,
+    transparent 8px,
+    transparent 16px
+  );
+}
+
+.statusPills {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.6rem;
+}
+.statusPill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0.55rem 0.75rem;
+  border-radius: var(--radius-md);
+  background: var(--bg-main);
+  border: 1px solid var(--border-light);
+  font-size: 0.85rem;
+}
+.statusPill i {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.pillLabel {
+  color: var(--text-secondary);
+  font-weight: 600;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.statusPill strong {
+  color: var(--text-primary);
+  font-weight: 800;
+}
+
+/* Status tones — fill (bar segment) + dot (pill) */
+.tone_info.statusSeg { background: var(--info); }
+.tone_violet.statusSeg { background: #8b5cf6; }
+.tone_warning.statusSeg { background: var(--warning); }
+.tone_success.statusSeg { background: var(--success); }
+.tone_danger.statusSeg { background: var(--error); }
+
+.tone_info i { background: var(--info); }
+.tone_violet i { background: #8b5cf6; }
+.tone_warning i { background: var(--warning); }
+.tone_success i { background: var(--success); }
+.tone_danger i { background: var(--error); }
+
+:global([data-theme="dark"]) .tone_violet.statusSeg,
+:global([data-theme="dark"]) .tone_violet i { background: #a78bfa; }
 
 @media (max-width: 600px) {
   .donutWrap { justify-content: center; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sparkDraw, .drawIn, .drawInDelay, .areaFade, .dotFade, .barFill { animation: none !important; }
+  .drawIn, .drawInDelay { stroke-dashoffset: 0 !important; }
+  .drawInDelay, .areaFade, .dotFade { opacity: 1 !important; }
 }

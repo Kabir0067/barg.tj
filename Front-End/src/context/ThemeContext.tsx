@@ -1,5 +1,5 @@
 "use client";
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 
 type Theme = 'light' | 'dark';
 
@@ -11,24 +11,33 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
+  // Start 'light' so the server HTML and the client's first render match exactly
+  // (no hydration mismatch). The actual visual theme is already applied before
+  // paint by the inline script in layout.tsx via the data-theme attribute; here
+  // we just sync React state to it right after mount.
   const [theme, setTheme] = useState<Theme>('light');
 
   useEffect(() => {
-    const saved = localStorage.getItem('theme') as Theme;
-    if (saved === 'light' || saved === 'dark') {
-      setTheme(saved);
-      document.documentElement.setAttribute('data-theme', saved);
-    } else {
-      document.documentElement.setAttribute('data-theme', 'light');
+    const attr = document.documentElement.getAttribute('data-theme');
+    if (attr === 'dark' || attr === 'light') {
+      setTheme(attr);
     }
   }, []);
 
-  const toggleTheme = () => {
-    const newTheme = theme === 'light' ? 'dark' : 'light';
-    setTheme(newTheme);
-    localStorage.setItem('theme', newTheme);
-    document.documentElement.setAttribute('data-theme', newTheme);
-  };
+  const toggleTheme = useCallback(() => {
+    setTheme((prev) => {
+      const next = prev === 'light' ? 'dark' : 'light';
+      try { localStorage.setItem('theme', next); } catch { /* ignore */ }
+
+      const root = document.documentElement;
+      // Briefly enable a smooth color transition only during the switch.
+      root.classList.add('theme-transitioning');
+      root.setAttribute('data-theme', next);
+      window.setTimeout(() => root.classList.remove('theme-transitioning'), 320);
+
+      return next;
+    });
+  }, []);
 
   return (
     <ThemeContext.Provider value={{ theme, toggleTheme }}>

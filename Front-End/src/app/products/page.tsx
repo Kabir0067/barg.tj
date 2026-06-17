@@ -1,32 +1,189 @@
 "use client";
-import React, { useState, useEffect, useCallback } from 'react';
-import Link from 'next/link';
+import React, { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Cookies from 'js-cookie';
-import { ShoppingCart, Edit, Plus, X, Trash2, Image, Search, LayoutGrid, Truck, ShieldCheck, Boxes } from 'lucide-react';
-import { apiClient, mediaUrl, categoryImage } from '@/lib/apiClient';
-import { useCart } from '@/context/CartContext';
+import {
+  Search, X, SlidersHorizontal, LayoutGrid, Plus, Edit, Trash2,
+  Image as ImageIcon, AlertTriangle, RotateCcw, PackageSearch, ChevronLeft, ChevronRight, ArrowDownUp,
+  Truck, ShieldCheck, Boxes,
+} from 'lucide-react';
+import { apiClient, categoryImage } from '@/lib/apiClient';
 import { useLanguage } from '@/context/LanguageContext';
+import { useToast } from '@/context/ToastContext';
+import { useConfirm } from '@/context/ConfirmContext';
+import ProductCard from '@/components/ProductCard';
 import styles from './Products.module.css';
 
 const PAGE_SIZE = 12;
+const FETCH_SIZE = 100; // catalog is small — pull the whole active set, filter/sort client-side
 
-export default function ProductsPage() {
-  const { addToCart } = useCart();
+type SortKey = 'newest' | 'price_asc' | 'price_desc' | 'name';
+
+function priceNum(p: any): number {
+  const n = parseFloat(p?.price);
+  return Number.isFinite(n) ? n : 0;
+}
+function createdMs(p: any): number {
+  const t = p?.created_at ? new Date(p.created_at).getTime() : 0;
+  return Number.isNaN(t) ? 0 : t;
+}
+
+function ProductsCatalog() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const { lang, t } = useLanguage();
+  const toast = useToast();
+  const confirm = useConfirm();
 
+  // ---- URL-derived state (the URL is the single source of truth) ----
+  const urlCategory = searchParams.get('category') || '';
+  const urlSearch = searchParams.get('q') || '';
+  const urlSort = (searchParams.get('sort') as SortKey) || 'newest';
+  const sort: SortKey = ['newest', 'price_asc', 'price_desc', 'name'].includes(urlSort) ? urlSort : 'newest';
+
+  // ---- data ----
   const [products, setProducts] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
 
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalItems, setTotalItems] = useState(0);
+  // ---- search input (debounced into the URL) ----
+  const [searchInput, setSearchInput] = useState(urlSearch);
+  const [page, setPage] = useState(1);
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
-  const [searchQuery, setSearchQuery] = useState('');
-  // null = not yet initialized from URL (prevents double-fetch on mount)
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const isMounted = useRef(false);
 
-  // Admin CRUD modal state
+  // Write a set of params to the URL (shareable + back-button friendly)
+  const updateUrl = useCallback((patch: Record<string, string | null>) => {
+    const params = new URLSearchParams(searchParams.toString());
+    Object.entries(patch).forEach(([k, v]) => {
+      if (v === null || v === '') params.delete(k);
+      else params.set(k, v);
+    });
+    const qs = params.toString();
+    router.replace(qs ? `/products?${qs}` : '/products', { scroll: false });
+  }, [router, searchParams]);
+
+  // ---- fetch products + categories once ----
+  const fetchAll = useCallback(() => {
+    setLoading(true);
+    setLoadError(false);
+    Promise.all([
+      apiClient.get(`/products/?page_size=${FETCH_SIZE}`).then(r => r.data.results || r.data || []),
+      apiClient.get('/categories/').then(r => r.data.results || r.data || []).catch(() => []),
+    ])
+      .then(([prods, cats]) => {
+        setProducts(Array.isArray(prods) ? prods : []);
+        setCategories(Array.isArray(cats) ? cats : []);
+      })
+      .catch(() => setLoadError(true))
+      .finally(() => setLoading(false));
+  }, []);
+
+  useEffect(() => {
+    fetchAll();
+    const token = Cookies.get('access_token');
+    if (token) {
+      apiClient.get('/auth/me/')
+        .then(res => { if (res.data?.is_staff) setIsAdmin(true); })
+        .catch(() => {});
+    }
+  }, [fetchAll]);
+
+  // Keep the search box in sync if the URL changes from outside (e.g. back button)
+  useEffect(() => {
+    if (!isMounted.current) { isMounted.current = true; return; }
+    setSearchInput(urlSearch);
+  }, [urlSearch]);
+
+  // Debounce the search input -> URL (~300ms)
+  useEffect(() => {
+    if (searchInput === urlSearch) return;
+    const id = window.setTimeout(() => {
+      updateUrl({ q: searchInput.trim() || null });
+    }, 300);
+    return () => window.clearTimeout(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchInput]);
+
+  // Reset to page 1 whenever the effective filters change
+  useEffect(() => { setPage(1); }, [urlCategory, urlSearch, sort]);
+
+  // The product payload exposes `category` as the category *id* (FK), not a slug.
+  // Map the incoming ?category=<slug> to its id so we can filter reliably.
+  const activeCategory = categories.find((c: any) => c.slug === urlCategory);
+
+  // ---- derived: filter -> search -> sort ----
+  const filtered = useMemo(() => {
+    let list = products;
+
+    if (urlCategory) {
+      const catId = activeCategory ? String(activeCategory.id) : null;
+      list = list.filter((p: any) => {
+        // primary: product.category is the FK id; match against the resolved slug→id
+        if (catId !== null && String(p.category) === catId) return true;
+        // fallbacks for any future payload shape that carries a slug
+        return p.category_slug === urlCategory || p.category?.slug === urlCategory;
+      });
+    }
+
+    const q = urlSearch.trim().toLowerCase();
+    if (q) {
+      const words = q.split(/\s+/);
+      list = list.filter((p: any) => {
+        const hay = `${p.name_tj || ''} ${p.name_ru || ''} ${p.sku || ''} ${p.category_name || ''}`.toLowerCase();
+        return words.every(w => hay.includes(w));
+      });
+    }
+
+    const sorted = [...list];
+    switch (sort) {
+      case 'price_asc': sorted.sort((a, b) => priceNum(a) - priceNum(b)); break;
+      case 'price_desc': sorted.sort((a, b) => priceNum(b) - priceNum(a)); break;
+      case 'name': sorted.sort((a, b) => {
+        const an = (lang === 'tj' ? a.name_tj : a.name_ru) || '';
+        const bn = (lang === 'tj' ? b.name_tj : b.name_ru) || '';
+        return an.localeCompare(bn, lang === 'tj' ? 'tg' : 'ru');
+      }); break;
+      default: sorted.sort((a, b) => createdMs(b) - createdMs(a)); // newest
+    }
+    return sorted;
+  }, [products, urlCategory, activeCategory, urlSearch, sort, lang]);
+
+  const totalResults = filtered.length;
+  const totalPages = Math.max(1, Math.ceil(totalResults / PAGE_SIZE));
+  const safePage = Math.min(page, totalPages);
+  const pageItems = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
+
+  const hasFilters = !!urlCategory || !!urlSearch.trim() || sort !== 'newest';
+
+  const sortLabels: Record<SortKey, string> = {
+    newest: lang === 'tj' ? 'Навтарин' : 'Сначала новые',
+    price_asc: lang === 'tj' ? 'Нарх: арзон → қиммат' : 'Цена: дешевле',
+    price_desc: lang === 'tj' ? 'Нарх: қиммат → арзон' : 'Цена: дороже',
+    name: lang === 'tj' ? 'Аз рӯи ном (А–Я)' : 'По названию (А–Я)',
+  };
+
+  const clearAll = () => {
+    setSearchInput('');
+    router.replace('/products', { scroll: false });
+    setPage(1);
+  };
+
+  const selectCategory = (slug: string) => {
+    updateUrl({ category: slug || null });
+    setMobileFiltersOpen(false);
+  };
+
+  const goToPage = (n: number) => {
+    const target = Math.min(Math.max(1, n), totalPages);
+    setPage(target);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // ---- Admin CRUD modal ----
   const [modalOpen, setModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<any>(null);
   const [formNameTj, setFormNameTj] = useState('');
@@ -35,67 +192,12 @@ export default function ProductsPage() {
   const [formCostPrice, setFormCostPrice] = useState('');
   const [formSku, setFormSku] = useState('');
   const [formStock, setFormStock] = useState('');
-  const [formThreshold, setFormThreshold] = useState('');
+  const [formThreshold, setFormThreshold] = useState('5');
   const [formUnit, setFormUnit] = useState('шт');
   const [formCategory, setFormCategory] = useState('');
   const [formImage, setFormImage] = useState<File | null>(null);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState('');
-
-  const fetchProducts = useCallback((search: string, category: string, page: number) => {
-    setLoading(true);
-    let query = `page=${page}&page_size=${PAGE_SIZE}`;
-    if (search) query += `&search=${encodeURIComponent(search)}`;
-    if (category) query += `&category=${encodeURIComponent(category)}`;
-
-    apiClient.get(`/products/?${query}`)
-      .then(res => {
-        setProducts(res.data.results || res.data || []);
-        setTotalItems(res.data.count || res.data?.length || 0);
-      })
-      .catch(console.error)
-      .finally(() => setLoading(false));
-  }, []);
-
-  // Mount: read URL params, fetch categories, check admin
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    setSelectedCategory(params.get('category') || '');
-
-    apiClient.get('/categories/')
-      .then(res => setCategories(res.data.results || res.data || []))
-      .catch(console.error);
-
-    const token = Cookies.get('access_token');
-    if (token) {
-      apiClient.get('/auth/me/')
-        .then(res => { if (res.data?.is_staff) setIsAdmin(true); })
-        .catch(() => {});
-    }
-  }, []);
-
-  // Fetch products whenever filters or page changes (after initialization)
-  useEffect(() => {
-    if (selectedCategory === null) return;
-    fetchProducts(searchQuery, selectedCategory, currentPage);
-  }, [fetchProducts, searchQuery, selectedCategory, currentPage]);
-
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(e.target.value);
-    setCurrentPage(1);
-  };
-
-  const handleCategorySelect = (slug: string) => {
-    setSelectedCategory(slug);
-    setCurrentPage(1);
-  };
-
-  const handlePageChange = (newPage: number) => {
-    const maxPage = Math.ceil(totalItems / PAGE_SIZE);
-    if (newPage < 1 || newPage > maxPage) return;
-    setCurrentPage(newPage);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
+  const [formError, setFormError] = useState('');
 
   const openAddModal = () => {
     setEditingProduct(null);
@@ -103,7 +205,7 @@ export default function ProductsPage() {
     setFormSku(''); setFormStock(''); setFormThreshold('5');
     setFormUnit(lang === 'tj' ? 'дона' : 'шт');
     setFormCategory(categories[0]?.id || '');
-    setFormImage(null); setError('');
+    setFormImage(null); setFormError('');
     setModalOpen(true);
   };
 
@@ -111,17 +213,17 @@ export default function ProductsPage() {
     setEditingProduct(p);
     setFormNameTj(p.name_tj || ''); setFormNameRu(p.name_ru || '');
     setFormPrice(p.price || ''); setFormCostPrice(p.cost_price || '');
-    setFormSku(p.sku || ''); setFormStock(p.stock || '');
-    setFormThreshold(p.low_stock_threshold || '5');
+    setFormSku(p.sku || ''); setFormStock(p.stock ?? '');
+    setFormThreshold(p.low_stock_threshold ?? '5');
     setFormUnit(p.unit || 'дона');
     setFormCategory(p.category || '');
-    setFormImage(null); setError('');
+    setFormImage(null); setFormError('');
     setModalOpen(true);
   };
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSaving(true); setError('');
+    setSaving(true); setFormError('');
     const formData = new FormData();
     formData.append('name_tj', formNameTj);
     formData.append('name_ru', formNameRu);
@@ -137,41 +239,60 @@ export default function ProductsPage() {
     try {
       if (editingProduct) {
         await apiClient.patch(`/products/${editingProduct.slug}/`, formData, {
-          headers: { 'Content-Type': 'multipart/form-data' }
+          headers: { 'Content-Type': 'multipart/form-data' },
         });
       } else {
         await apiClient.post('/products/', formData, {
-          headers: { 'Content-Type': 'multipart/form-data' }
+          headers: { 'Content-Type': 'multipart/form-data' },
         });
       }
       setModalOpen(false);
-      fetchProducts(searchQuery, selectedCategory || '', currentPage);
+      toast.success(lang === 'tj' ? 'Нигоҳ дошта шуд' : 'Сохранено');
+      fetchAll();
     } catch {
-      setError(lang === 'tj' ? 'Хатогӣ дар нигоҳдорӣ. Майдонҳоро дуруст пур кунед.' : 'Ошибка сохранения. Заполните поля корректно.');
+      setFormError(lang === 'tj'
+        ? 'Хатогӣ дар нигоҳдорӣ. Майдонҳоро дуруст пур кунед.'
+        : 'Ошибка сохранения. Заполните поля корректно.');
     } finally {
       setSaving(false);
     }
   };
 
-  const handleDelete = async (slug: string) => {
-    if (!confirm(t('prod_admin_delete_confirm'))) return;
+  const handleDelete = async (p: any) => {
+    const ok = await confirm({
+      title: t('prod_admin_delete_confirm'),
+      message: lang === 'tj' ? p.name_tj : p.name_ru,
+      danger: true,
+      confirmText: lang === 'tj' ? 'Нест кардан' : 'Удалить',
+    });
+    if (!ok) return;
     try {
-      await apiClient.delete(`/products/${slug}/`);
-      fetchProducts(searchQuery, selectedCategory || '', currentPage);
+      await apiClient.delete(`/products/${p.slug}/`);
+      toast.success(lang === 'tj' ? 'Нест карда шуд' : 'Удалено');
+      fetchAll();
     } catch {
-      alert(lang === 'tj' ? 'Хатогӣ дар несткунӣ' : 'Ошибка при удалении');
+      toast.error(lang === 'tj' ? 'Хатогӣ дар несткунӣ' : 'Ошибка при удалении');
     }
   };
 
-  const totalPages = Math.ceil(totalItems / PAGE_SIZE);
+  // Build a paginator with ellipses
+  const pageList = useMemo<(number | '...')[]>(() => {
+    return Array.from({ length: totalPages }, (_, i) => i + 1)
+      .filter(p => p === 1 || p === totalPages || Math.abs(p - safePage) <= 1)
+      .reduce<(number | '...')[]>((acc, p, idx, arr) => {
+        if (idx > 0 && (arr[idx - 1] as number) < p - 1) acc.push('...');
+        acc.push(p);
+        return acc;
+      }, []);
+  }, [totalPages, safePage]);
 
   return (
     <div className={`container ${styles.page}`}>
 
-      {/* Catalog Hero */}
-      <div className={styles.hero}>
+      {/* ===== Catalog hero ===== */}
+      <section className={styles.hero}>
         <img src="/hero-products.jpg" alt="" className={styles.heroImg} aria-hidden="true" />
-        <span className={styles.heroOverlay} />
+        <span className={styles.heroOverlay} aria-hidden />
         <div className={styles.heroBody}>
           <span className={styles.heroBadge}>{t('prod_hero_badge')}</span>
           <h1 className={styles.heroTitle}>{t('prod_title')}</h1>
@@ -179,162 +300,274 @@ export default function ProductsPage() {
           <div className={styles.heroStats}>
             <span className={styles.heroStat}><Truck size={16} /> {t('prod_hero_delivery')}</span>
             <span className={styles.heroStat}><ShieldCheck size={16} /> {t('prod_hero_quality')}</span>
-            {totalItems > 0 && (
-              <span className={styles.heroStat}><Boxes size={16} /> {totalItems}+ {t('prod_hero_count')}</span>
+            {!loading && !loadError && (
+              <span className={styles.heroStat}><Boxes size={16} /> {products.length}+ {t('prod_hero_count')}</span>
             )}
           </div>
-          {isAdmin && (
-            <button className={`${styles.addProdBtn} btn-primary`} onClick={openAddModal}>
-              <Plus size={18} /> {t('prod_admin_add')}
-            </button>
-          )}
         </div>
-      </div>
+        {isAdmin && (
+          <button className={styles.heroAddBtn} onClick={openAddModal}>
+            <Plus size={18} /> <span>{t('prod_admin_add')}</span>
+          </button>
+        )}
+      </section>
 
-      {/* Search + Category Filter */}
-      <div className={styles.filterSection}>
+      {/* ===== Toolbar: search + sort + mobile filter trigger ===== */}
+      <div className={styles.toolbar}>
         <div className={styles.searchBar}>
-          <Search size={18} className={styles.searchIcon} />
+          <Search size={18} className={styles.searchIcon} aria-hidden />
           <input
             type="text"
-            value={searchQuery}
-            onChange={handleSearchChange}
-            placeholder={lang === 'tj' ? 'Ҷустуҷӯи маҳсулот...' : 'Поиск товаров...'}
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            placeholder={lang === 'tj' ? 'Ҷустуҷӯи маҳсулот…' : 'Поиск товаров…'}
+            aria-label={lang === 'tj' ? 'Ҷустуҷӯ' : 'Поиск'}
+            className={styles.searchInput}
           />
-          {searchQuery && (
-            <button onClick={() => { setSearchQuery(''); setCurrentPage(1); }} className={styles.clearSearch}>
+          {searchInput && (
+            <button
+              onClick={() => setSearchInput('')}
+              className={styles.clearSearch}
+              aria-label={lang === 'tj' ? 'Тоза кардан' : 'Очистить'}
+            >
               <X size={16} />
             </button>
           )}
         </div>
 
-        <div className={styles.categoryPills}>
-          <button
-            className={`${styles.pill} ${selectedCategory === '' ? styles.pillActive : ''}`}
-            onClick={() => handleCategorySelect('')}
+        <div className={styles.sortWrap}>
+          <ArrowDownUp size={16} className={styles.sortIcon} aria-hidden />
+          <select
+            className={styles.sortSelect}
+            value={sort}
+            onChange={(e) => updateUrl({ sort: e.target.value === 'newest' ? null : e.target.value })}
+            aria-label={lang === 'tj' ? 'Тартиб' : 'Сортировка'}
           >
-            <LayoutGrid size={15} />
-            <span>{lang === 'tj' ? 'Ҳама' : 'Все'}</span>
-          </button>
-
-          {categories.map((cat: any) => (
-            <button
-              key={cat.id}
-              className={`${styles.pill} ${selectedCategory === cat.slug ? styles.pillActive : ''}`}
-              onClick={() => handleCategorySelect(cat.slug)}
-            >
-              <img src={categoryImage(cat.slug)} className={styles.pillThumb} alt="" />
-              <span>{lang === 'tj' ? cat.name_tj : cat.name_ru}</span>
-            </button>
-          ))}
+            {(Object.keys(sortLabels) as SortKey[]).map(k => (
+              <option key={k} value={k}>{sortLabels[k]}</option>
+            ))}
+          </select>
         </div>
+
+        <button
+          className={styles.filterTrigger}
+          onClick={() => setMobileFiltersOpen(true)}
+          aria-label={lang === 'tj' ? 'Филтрҳо' : 'Фильтры'}
+        >
+          <SlidersHorizontal size={17} />
+          <span>{lang === 'tj' ? 'Категорияҳо' : 'Категории'}</span>
+          {urlCategory && <span className={styles.filterDot} />}
+        </button>
       </div>
 
-      {loading ? (
-        <div className={styles.loading}>
-          <div className={styles.spinner}></div>
-          <p>{t('prod_loading')}</p>
+      {/* ===== Category chips (desktop) ===== */}
+      <div className={styles.chips}>
+        <button
+          className={`${styles.chip} ${!urlCategory ? styles.chipActive : ''}`}
+          onClick={() => selectCategory('')}
+        >
+          <LayoutGrid size={15} />
+          <span>{lang === 'tj' ? 'Ҳама' : 'Все'}</span>
+        </button>
+        {categories.map((cat: any) => (
+          <button
+            key={cat.id}
+            className={`${styles.chip} ${urlCategory === cat.slug ? styles.chipActive : ''}`}
+            onClick={() => selectCategory(cat.slug)}
+          >
+            <img src={categoryImage(cat.slug)} className={styles.chipThumb} alt="" aria-hidden />
+            <span>{lang === 'tj' ? cat.name_tj : cat.name_ru}</span>
+          </button>
+        ))}
+      </div>
+
+      {/* ===== Result meta + active-filter chips ===== */}
+      {!loading && !loadError && (
+        <div className={styles.metaRow}>
+          <span className={styles.count}>
+            <strong className="tnum">{totalResults}</strong>{' '}
+            {lang === 'tj' ? 'маҳсулот ёфт шуд' : (totalResults === 1 ? 'товар' : 'товаров')}
+          </span>
+
+          {hasFilters && (
+            <div className={styles.activeFilters}>
+              {urlCategory && activeCategory && (
+                <button className={styles.activeChip} onClick={() => selectCategory('')}>
+                  {lang === 'tj' ? activeCategory.name_tj : activeCategory.name_ru}
+                  <X size={13} />
+                </button>
+              )}
+              {urlSearch.trim() && (
+                <button className={styles.activeChip} onClick={() => setSearchInput('')}>
+                  “{urlSearch.trim()}”
+                  <X size={13} />
+                </button>
+              )}
+              {sort !== 'newest' && (
+                <button className={styles.activeChip} onClick={() => updateUrl({ sort: null })}>
+                  {sortLabels[sort]}
+                  <X size={13} />
+                </button>
+              )}
+              <button className={styles.clearAll} onClick={clearAll}>
+                {lang === 'tj' ? 'Тоза кардани ҳама' : 'Сбросить всё'}
+              </button>
+            </div>
+          )}
         </div>
-      ) : products.length > 0 ? (
+      )}
+
+      {/* ===== Body: loading / error / empty / grid ===== */}
+      {loading ? (
         <div className={styles.grid}>
-          {products.map(p => {
-            const name = lang === 'tj' ? p.name_tj : p.name_ru;
-            return (
-              <div key={p.id} className={styles.card}>
-                <div className={styles.imgContainer}>
-                  <Link href={`/products/${p.slug}`} className={styles.imgWrap}>
-                    {p.image ? (
-                      <img src={mediaUrl(p.image)} alt={name} className={styles.img} loading="lazy" />
-                    ) : (
-                      <div className={styles.noImg}>{t('prod_no_img')}</div>
-                    )}
-                  </Link>
-                  {isAdmin && (
-                    <div className={styles.adminBadges}>
-                      <button className={styles.editBadge} onClick={() => openEditModal(p)}>
-                        <Edit size={15} />
-                      </button>
-                      <button className={styles.deleteBadge} onClick={() => handleDelete(p.slug)}>
-                        <Trash2 size={15} />
-                      </button>
-                    </div>
-                  )}
-                </div>
-                <div className={styles.info}>
-                  <Link href={`/products/${p.slug}`}>
-                    <h3 className={styles.name}>{name}</h3>
-                  </Link>
-                  <div className={styles.bottom}>
-                    <div>
-                      <span className={styles.price}>{p.price} сом.</span>
-                    </div>
-                    <button className={styles.addBtn} onClick={() => addToCart(p)} aria-label={t('prod_btn_add')}>
-                      <ShoppingCart size={18} />
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div key={i} className={styles.skelCard}>
+              <div className={`${styles.skelImg} skeleton`} />
+              <div className={styles.skelBody}>
+                <div className={`${styles.skelLine} skeleton`} />
+                <div className={`${styles.skelLineShort} skeleton`} />
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : loadError ? (
+        <div className={styles.state}>
+          <span className={`${styles.stateIcon} ${styles.stateIconError}`}><AlertTriangle size={30} /></span>
+          <h3>{lang === 'tj' ? 'Боргирӣ нашуд' : 'Не удалось загрузить'}</h3>
+          <p>{lang === 'tj'
+            ? 'Дар пайвастшавӣ ба сервер мушкилӣ ба миён омад.'
+            : 'Произошла ошибка при подключении к серверу.'}</p>
+          <button className={`btn-primary ${styles.stateBtn}`} onClick={fetchAll}>
+            <RotateCcw size={16} /> {lang === 'tj' ? 'Аз нав кӯшиш кунед' : 'Повторить'}
+          </button>
+        </div>
+      ) : pageItems.length > 0 ? (
+        <>
+          <div className={styles.grid}>
+            {pageItems.map((p: any) => (
+              <div key={p.id} className={styles.cardWrap}>
+                <ProductCard product={p} />
+                {isAdmin && (
+                  <div className={styles.adminBadges}>
+                    <button
+                      className={styles.editBadge}
+                      onClick={() => openEditModal(p)}
+                      aria-label={t('prod_admin_edit')}
+                    >
+                      <Edit size={15} />
+                    </button>
+                    <button
+                      className={styles.deleteBadge}
+                      onClick={() => handleDelete(p)}
+                      aria-label={lang === 'tj' ? 'Нест кардан' : 'Удалить'}
+                    >
+                      <Trash2 size={15} />
                     </button>
                   </div>
-                </div>
+                )}
               </div>
-            );
-          })}
-        </div>
+            ))}
+          </div>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className={styles.pagination}>
+              <button
+                onClick={() => goToPage(safePage - 1)}
+                disabled={safePage === 1}
+                className={styles.pageBtn}
+                aria-label={lang === 'tj' ? 'Саҳифаи қаблӣ' : 'Предыдущая'}
+              >
+                <ChevronLeft size={18} />
+              </button>
+              {pageList.map((item, idx) =>
+                item === '...' ? (
+                  <span key={`dots-${idx}`} className={styles.pageDots}>…</span>
+                ) : (
+                  <button
+                    key={item}
+                    onClick={() => goToPage(item as number)}
+                    className={`${styles.pageBtn} ${safePage === item ? styles.pageActive : ''} tnum`}
+                  >
+                    {item}
+                  </button>
+                )
+              )}
+              <button
+                onClick={() => goToPage(safePage + 1)}
+                disabled={safePage === totalPages}
+                className={styles.pageBtn}
+                aria-label={lang === 'tj' ? 'Саҳифаи баъдӣ' : 'Следующая'}
+              >
+                <ChevronRight size={18} />
+              </button>
+            </div>
+          )}
+        </>
       ) : (
-        <div className={styles.empty}>
+        <div className={styles.state}>
+          <span className={styles.stateIcon}><PackageSearch size={30} /></span>
           <h3>{t('prod_not_found')}</h3>
-          <p>{lang === 'tj' ? 'Лутфан калимаи ҷустуҷӯро тағйир диҳед.' : 'Пожалуйста, попробуйте изменить поисковый запрос.'}</p>
+          <p>{hasFilters
+            ? (lang === 'tj'
+              ? 'Бо филтрҳои интихобшуда чизе ёфт нашуд. Филтрҳоро тоза кунед.'
+              : 'По выбранным фильтрам ничего не найдено. Попробуйте сбросить фильтры.')
+            : (lang === 'tj'
+              ? 'Ҳоло ягон маҳсулот нест.'
+              : 'Пока нет ни одного товара.')}</p>
+          {hasFilters && (
+            <button className={`btn-primary ${styles.stateBtn}`} onClick={clearAll}>
+              <RotateCcw size={16} /> {lang === 'tj' ? 'Тоза кардани филтрҳо' : 'Сбросить фильтры'}
+            </button>
+          )}
         </div>
       )}
 
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className={styles.pagination}>
-          <button
-            onClick={() => handlePageChange(currentPage - 1)}
-            disabled={currentPage === 1}
-            className={styles.pageBtn}
-            aria-label="Саҳифаи қаблӣ"
-          >
-            ‹
-          </button>
-
-          {Array.from({ length: totalPages }, (_, i) => i + 1)
-            .filter(p => p === 1 || p === totalPages || Math.abs(p - currentPage) <= 1)
-            .reduce<(number | '...')[]>((acc, p, idx, arr) => {
-              if (idx > 0 && (arr[idx - 1] as number) < p - 1) acc.push('...');
-              acc.push(p);
-              return acc;
-            }, [])
-            .map((item, idx) =>
-              item === '...' ? (
-                <span key={`dots-${idx}`} className={styles.pageDots}>…</span>
-              ) : (
+      {/* ===== Mobile filter sheet ===== */}
+      {mobileFiltersOpen && (
+        <div
+          className={styles.sheetOverlay}
+          onClick={() => setMobileFiltersOpen(false)}
+          role="presentation"
+        >
+          <div className={styles.sheet} onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
+            <div className={styles.sheetHandle} aria-hidden />
+            <div className={styles.sheetHead}>
+              <h2>{lang === 'tj' ? 'Категорияҳо' : 'Категории'}</h2>
+              <button onClick={() => setMobileFiltersOpen(false)} className={styles.sheetClose} aria-label="X">
+                <X size={20} />
+              </button>
+            </div>
+            <div className={styles.sheetBody}>
+              <button
+                className={`${styles.sheetItem} ${!urlCategory ? styles.sheetItemActive : ''}`}
+                onClick={() => selectCategory('')}
+              >
+                <LayoutGrid size={18} />
+                <span>{lang === 'tj' ? 'Ҳама категорияҳо' : 'Все категории'}</span>
+              </button>
+              {categories.map((cat: any) => (
                 <button
-                  key={item}
-                  onClick={() => handlePageChange(item as number)}
-                  className={`${styles.pageBtn} ${currentPage === item ? styles.pageActive : ''}`}
+                  key={cat.id}
+                  className={`${styles.sheetItem} ${urlCategory === cat.slug ? styles.sheetItemActive : ''}`}
+                  onClick={() => selectCategory(cat.slug)}
                 >
-                  {item}
+                  <img src={categoryImage(cat.slug)} className={styles.sheetThumb} alt="" aria-hidden />
+                  <span>{lang === 'tj' ? cat.name_tj : cat.name_ru}</span>
                 </button>
-              )
-            )}
-
-          <button
-            onClick={() => handlePageChange(currentPage + 1)}
-            disabled={currentPage === totalPages}
-            className={styles.pageBtn}
-            aria-label="Саҳифаи баъдӣ"
-          >
-            ›
-          </button>
+              ))}
+            </div>
+          </div>
         </div>
       )}
 
-      {/* Admin Modal */}
+      {/* ===== Admin modal ===== */}
       {modalOpen && (
-        <div className={styles.modalOverlay}>
-          <div className={styles.modal}>
+        <div className={styles.modalOverlay} onClick={() => setModalOpen(false)} role="presentation">
+          <div className={styles.modal} onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
             <div className={styles.modalHead}>
               <h2>{editingProduct ? t('prod_admin_edit') : t('prod_admin_add')}</h2>
-              <button onClick={() => setModalOpen(false)} className={styles.modalClose}>
+              <button onClick={() => setModalOpen(false)} className={styles.modalClose} aria-label="X">
                 <X size={22} />
               </button>
             </div>
@@ -389,17 +622,17 @@ export default function ProductsPage() {
               <div className={styles.modalField}>
                 <label>{lang === 'tj' ? 'Расм' : 'Изображение'}</label>
                 <div className={styles.fileInputWrap}>
-                  <Image size={18} />
+                  <ImageIcon size={18} />
                   <input type="file" onChange={e => setFormImage(e.target.files?.[0] || null)} accept="image/*" />
                 </div>
               </div>
-              {error && <div className={styles.modalError}>{error}</div>}
+              {formError && <div className={styles.modalError}>{formError}</div>}
               <div className={styles.modalActions}>
                 <button type="button" className="btn-outline" onClick={() => setModalOpen(false)}>
                   {lang === 'tj' ? 'Баргаштан' : 'Отмена'}
                 </button>
                 <button type="submit" className="btn-primary" disabled={saving}>
-                  {saving ? '...' : (lang === 'tj' ? 'Сабт кардан' : 'Сохранить')}
+                  {saving ? '…' : (lang === 'tj' ? 'Сабт кардан' : 'Сохранить')}
                 </button>
               </div>
             </form>
@@ -407,5 +640,32 @@ export default function ProductsPage() {
         </div>
       )}
     </div>
+  );
+}
+
+function CatalogFallback() {
+  return (
+    <div className={`container ${styles.page}`}>
+      <div className={`${styles.hero} ${styles.heroSkeleton} skeleton`} />
+      <div className={styles.grid}>
+        {Array.from({ length: 8 }).map((_, i) => (
+          <div key={i} className={styles.skelCard}>
+            <div className={`${styles.skelImg} skeleton`} />
+            <div className={styles.skelBody}>
+              <div className={`${styles.skelLine} skeleton`} />
+              <div className={`${styles.skelLineShort} skeleton`} />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export default function ProductsPage() {
+  return (
+    <Suspense fallback={<CatalogFallback />}>
+      <ProductsCatalog />
+    </Suspense>
   );
 }

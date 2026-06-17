@@ -7,7 +7,37 @@ import { useLanguage } from '@/context/LanguageContext';
 import { useTheme } from '@/context/ThemeContext';
 import { ShoppingCart, Menu, X, Shield, LogOut, Sun, Moon, User, Package, ChevronRight } from 'lucide-react';
 import { apiClient } from '@/lib/apiClient';
+import Brand from './Brand';
+import NotificationBell from './NotificationBell';
 import styles from './Navbar.module.css';
+
+const TajikFlag = () => (
+  <svg viewBox="0 0 21 14" preserveAspectRatio="xMidYMid slice" style={{ width: '100%', height: '100%', borderRadius: '50%', display: 'block' }}>
+    <rect width="21" height="4" fill="#cc0c2f" />
+    <rect width="21" height="6" y="4" fill="#fff" />
+    <rect width="21" height="4" y="10" fill="#00975e" />
+    <g transform="translate(10.5, 7) scale(0.65)" fill="#f1b516">
+      <path d="M -3,2 L 3,2 L 2.5,1 L -2.5,1 Z" />
+      <path d="M -2.5,1 C -2,1 -1.5,0 -1.5,-1 C -1.5,0 -0.5,0.5 0,0 C 0.5,0.5 1.5,0 1.5,-1 C 1.5,0 2,1 2.5,1 Z" />
+      <path d="M -1,-1 C -1,-2 1,-2 1,-1 L 0.7,-0.7 C 0.7,-1.5 -0.7,-1.5 -0.7,-0.7 Z" />
+      <circle cx="-3" cy="-1.5" r="0.4" />
+      <circle cx="-2.3" cy="-2.5" r="0.4" />
+      <circle cx="-1.3" cy="-3.2" r="0.4" />
+      <circle cx="0" cy="-3.5" r="0.4" />
+      <circle cx="1.3" cy="-3.2" r="0.4" />
+      <circle cx="2.3" cy="-2.5" r="0.4" />
+      <circle cx="3" cy="-1.5" r="0.4" />
+    </g>
+  </svg>
+);
+
+const RussianFlag = () => (
+  <svg viewBox="0 0 3 2" preserveAspectRatio="xMidYMid slice" style={{ width: '100%', height: '100%', borderRadius: '50%', display: 'block' }}>
+    <rect width="3" height="2" fill="#fff" />
+    <rect width="3" height="1.333" y="0.667" fill="#0039a6" />
+    <rect width="3" height="0.667" y="1.333" fill="#d52b1e" />
+  </svg>
+);
 
 export default function Navbar() {
   const { itemCount } = useCart();
@@ -37,22 +67,19 @@ export default function Navbar() {
   return (
     <header className={styles.header}>
       <div className={`container ${styles.inner}`}>
-        <Link href="/" className={styles.logo}>
-          <svg className={styles.logoIcon} width="28" height="28" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect width="32" height="32" rx="8" fill="#047857"/>
-            <path d="M16 5C16 5 25 9.5 25 18.5C25 23.5 21 27 16 27C16 27 16.5 19 8 14.5C8 14.5 9.5 5 16 5Z" fill="white" opacity="0.95"/>
-            <path d="M16 27L16 15" stroke="#047857" strokeWidth="1.8" strokeLinecap="round"/>
-          </svg>
-          <span>Barg.tj</span>
-        </Link>
+        <Brand size={52} priority />
+
 
         <nav className={styles.desktop}>
           <Link href="/products" className={styles.link}>{t('nav_products')}</Link>
           
           {user?.is_staff && (
-            <Link href="/admin" className={styles.adminLink}>
-              <Shield size={16} /> {t('nav_admin')}
-            </Link>
+            <>
+              <Link href="/admin" className={styles.adminLink}>
+                <Shield size={16} /> {t('nav_admin')}
+              </Link>
+              <NotificationBell />
+            </>
           )}
 
           <Link href="/cart" className={styles.cartLink}>
@@ -67,18 +94,29 @@ export default function Navbar() {
 
           {/* Language Switcher */}
           <div className={styles.langSwitch}>
-            <button 
-              onClick={() => setLang('tj')} 
-              className={`${styles.langBtn} ${lang === 'tj' ? styles.langActive : ''}`}
-            >
-              TJ
-            </button>
-            <button 
-              onClick={() => setLang('ru')} 
-              className={`${styles.langBtn} ${lang === 'ru' ? styles.langActive : ''}`}
-            >
-              RU
-            </button>
+            <div className={styles.switchTrack}>
+              <div className={`${styles.switchThumb} ${lang === 'ru' ? styles.switchThumbRu : ''}`} />
+              <button 
+                onClick={() => setLang('tj')} 
+                className={`${styles.switchOption} ${lang === 'tj' ? styles.optionActive : ''}`}
+                title="Тоҷикӣ"
+                type="button"
+              >
+                <div className={styles.flagWrapper}>
+                  <TajikFlag />
+                </div>
+              </button>
+              <button 
+                onClick={() => setLang('ru')} 
+                className={`${styles.switchOption} ${lang === 'ru' ? styles.optionActive : ''}`}
+                title="Русский"
+                type="button"
+              >
+                <div className={styles.flagWrapper}>
+                  <RussianFlag />
+                </div>
+              </button>
+            </div>
           </div>
 
           {user ? (
@@ -94,6 +132,7 @@ export default function Navbar() {
         </nav>
 
         <div className={styles.mobileActions}>
+          {user?.is_staff && <NotificationBell />}
           <button onClick={toggleTheme} className={styles.themeToggle} aria-label="Toggle Theme">
             {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
           </button>
@@ -112,17 +151,35 @@ export default function Navbar() {
           <nav className={styles.mobileDrawer} onClick={(e) => e.stopPropagation()}>
             {/* Drawer header */}
             <div className={styles.drawerHeader}>
-              <Link href="/" className={styles.drawerLogo} onClick={() => setOpen(false)}>
-                <svg className={styles.logoIcon} width="26" height="26" viewBox="0 0 32 32" fill="none">
-                  <rect width="32" height="32" rx="8" fill="#047857"/>
-                  <path d="M16 5C16 5 25 9.5 25 18.5C25 23.5 21 27 16 27C16 27 16.5 19 8 14.5C8 14.5 9.5 5 16 5Z" fill="white" opacity="0.95"/>
-                  <path d="M16 27L16 15" stroke="#047857" strokeWidth="1.8" strokeLinecap="round"/>
-                </svg>
-                <span>Barg.tj</span>
-              </Link>
-              <button className={styles.drawerClose} onClick={() => setOpen(false)}>
-                <X size={20} />
-              </button>
+              <Brand size={58} variant="auto" onClick={() => setOpen(false)} />
+              <div className={styles.drawerHeaderActions}>
+                <div className={styles.switchTrack}>
+                  <div className={`${styles.switchThumb} ${lang === 'ru' ? styles.switchThumbRu : ''}`} />
+                  <button 
+                    onClick={() => { setLang('tj'); setOpen(false); }}
+                    className={`${styles.switchOption} ${lang === 'tj' ? styles.optionActive : ''}`}
+                    title="Тоҷикӣ"
+                    type="button"
+                  >
+                    <div className={styles.flagWrapper}>
+                      <TajikFlag />
+                    </div>
+                  </button>
+                  <button 
+                    onClick={() => { setLang('ru'); setOpen(false); }}
+                    className={`${styles.switchOption} ${lang === 'ru' ? styles.optionActive : ''}`}
+                    title="Русский"
+                    type="button"
+                  >
+                    <div className={styles.flagWrapper}>
+                      <RussianFlag />
+                    </div>
+                  </button>
+                </div>
+                <button className={styles.drawerClose} onClick={() => setOpen(false)}>
+                  <X size={20} />
+                </button>
+              </div>
             </div>
 
             {/* Navigation links */}
@@ -143,27 +200,6 @@ export default function Navbar() {
 
             <div className={styles.drawerDivider} />
 
-            {/* Language section */}
-            <div className={styles.drawerLangSection}>
-              <span className={styles.drawerSectionLabel}>Язык / Забон</span>
-              <div className={styles.drawerLangBtns}>
-                <button
-                  onClick={() => { setLang('tj'); setOpen(false); }}
-                  className={`${styles.drawerLangBtn} ${lang === 'tj' ? styles.drawerLangActive : ''}`}
-                >
-                  Тоҷикӣ (TJ)
-                </button>
-                <button
-                  onClick={() => { setLang('ru'); setOpen(false); }}
-                  className={`${styles.drawerLangBtn} ${lang === 'ru' ? styles.drawerLangActive : ''}`}
-                >
-                  Русский (RU)
-                </button>
-              </div>
-            </div>
-
-            <div className={styles.drawerDivider} />
-
             {/* User section */}
             {user ? (
               <div className={styles.drawerUserSection}>
@@ -173,7 +209,11 @@ export default function Navbar() {
                   </div>
                   <div>
                     <div className={styles.drawerUserName}>{user.name || user.phone}</div>
-                    <div className={styles.drawerUserSub}>Клиент / Муштарӣ</div>
+                    <div className={styles.drawerUserSub}>
+                      {user.is_staff 
+                        ? (lang === 'tj' ? 'Администратор' : 'Администратор')
+                        : (lang === 'tj' ? 'Клиент / Муштарӣ' : 'Покупатель')}
+                    </div>
                   </div>
                 </div>
                 <button onClick={() => { handleLogout(); setOpen(false); }} className={styles.drawerLogoutBtn}>
@@ -182,11 +222,17 @@ export default function Navbar() {
                 </button>
               </div>
             ) : (
-              <Link href="/login" className={styles.drawerLoginBtn} onClick={() => setOpen(false)}>
-                <User size={20} />
-                <span>{t('nav_login')}</span>
-                <ChevronRight size={16} className={styles.drawerLoginArrow} />
-              </Link>
+              <div className={styles.drawerLoginContainer}>
+                <Link href="/login" className={styles.drawerLoginBtn} onClick={() => setOpen(false)}>
+                  <User size={20} />
+                  <span>{t('nav_login')}</span>
+                  <ChevronRight size={16} className={styles.drawerLoginArrow} />
+                </Link>
+                <Link href="/admin-login" className={styles.drawerAdminLoginBtn} onClick={() => setOpen(false)}>
+                  <Shield size={16} />
+                  <span>{lang === 'tj' ? 'Воридшавии админ' : 'Вход для админа'}</span>
+                </Link>
+              </div>
             )}
           </nav>
         </div>

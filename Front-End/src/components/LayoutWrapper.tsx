@@ -16,7 +16,7 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
   return (
     <>
       <Navbar />
-      <main style={{ minHeight: "85vh" }}>
+      <main className="appMain">
         {children}
       </main>
       <Footer />
