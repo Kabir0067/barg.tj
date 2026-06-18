@@ -5,7 +5,7 @@ import { useLanguage } from '@/context/LanguageContext';
 import { useToast } from '@/context/ToastContext';
 import { formatPrice } from '@/lib/format';
 import {
-  Bell, CheckCircle2, XCircle, User, Clock, ShoppingBag, X,
+  Bell, CheckCircle2, XCircle, User, Clock, ShoppingBag, X, Phone, MapPin,
 } from 'lucide-react';
 import styles from './NotificationBell.module.css';
 
@@ -14,6 +14,10 @@ type Order = {
   number: string;
   customer_name: string;
   customer_phone: string;
+  address_village?: string;
+  address_street?: string;
+  address_house?: string;
+  address_landmark?: string;
   total: string;
   created_at: string;
   items: { id: number; product_name: string; quantity: number }[];
@@ -188,6 +192,17 @@ export default function NotificationBell() {
             ) : (
               orders.map((order) => {
                 const isBusy = busyId === order.id;
+                const address = [
+                  order.address_village,
+                  order.address_street,
+                  order.address_house
+                    ? `${lang === 'ru' ? 'д.' : 'х.'} ${order.address_house}`
+                    : '',
+                  order.address_landmark,
+                ]
+                  .map((s) => (s || '').trim())
+                  .filter(Boolean)
+                  .join(', ');
                 return (
                   <div
                     key={order.id}
@@ -207,6 +222,24 @@ export default function NotificationBell() {
                         {formatPrice(order.total)}
                       </span>
                     </div>
+                    {(order.customer_phone || address) && (
+                      <div className={styles.notifContact}>
+                        {order.customer_phone && order.customer_phone !== '—' && (
+                          <a
+                            href={`tel:${order.customer_phone.replace(/[^\d+]/g, '')}`}
+                            className={styles.notifPhone}
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <Phone size={13} /> {order.customer_phone}
+                          </a>
+                        )}
+                        {address && (
+                          <span className={styles.notifAddress}>
+                            <MapPin size={13} /> {address}
+                          </span>
+                        )}
+                      </div>
+                    )}
                     <div className={styles.notifItems}>
                       {order.items.slice(0, 3).map((it) => (
                         <span key={it.id} className={styles.notifItem}>

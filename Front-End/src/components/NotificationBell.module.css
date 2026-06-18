@@ -246,6 +246,37 @@
   font-variant-numeric: tabular-nums;
 }
 
+.notifContact {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 8px 10px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+}
+.notifPhone {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--brand-dark);
+  width: fit-content;
+}
+.notifPhone:hover { text-decoration: underline; }
+.notifPhone svg { color: var(--brand-primary); flex-shrink: 0; }
+.notifAddress {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--text-secondary);
+}
+.notifAddress svg { color: var(--text-tertiary); flex-shrink: 0; margin-top: 1px; }
+
 .notifItems {
   display: flex;
   flex-wrap: wrap;
