@@ -237,7 +237,9 @@ img, svg { max-width: 100%; display: block; }
 :focus-visible {
   outline: none;
   box-shadow: var(--ring);
-  border-radius: var(--radius-xs);
+  /* no border-radius override — the ring (box-shadow) already follows each
+     element's own radius; forcing one turned round elements (FAB, avatars,
+     toggles, pills) into rounded squares while focused. */
 }
 a:focus-visible, button:focus-visible, [role="button"]:focus-visible {
   box-shadow: var(--ring);

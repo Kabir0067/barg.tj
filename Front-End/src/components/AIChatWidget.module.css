@@ -4,7 +4,10 @@
   bottom: max(28px, env(safe-area-inset-bottom));
   right: 24px;
   width: 62px; height: 62px;
-  border-radius: var(--radius-full);
+  aspect-ratio: 1 / 1;
+  /* literal 50% (not a CSS var) so the FAB is ALWAYS a circle, even before
+     globals.css :root variables are applied on first paint */
+  border-radius: 50%;
   background: var(--brand-gradient);
   color: #fff;
   display: flex; align-items: center; justify-content: center;
@@ -15,10 +18,18 @@
   transition: transform var(--dur-base) var(--ease-spring), box-shadow var(--dur-base) var(--ease-standard);
 }
 .fab:hover { transform: scale(1.1); box-shadow: var(--shadow-xl); }
+
+/* On the cart page the fixed mobile checkout bar (<980px) sits at the bottom;
+   lift the FAB above it so it never covers the "checkout" button. */
+@media (max-width: 979px) {
+  /* .fab.fabAboveBar = specificity (0,2,0) so it beats the single-class
+     .fab mobile override regardless of source order */
+  .fab.fabAboveBar { bottom: calc(86px + env(safe-area-inset-bottom)); }
+}
 .fabIcon { position: relative; z-index: 2; }
 .pulseRing {
   position: absolute; inset: 0;
-  border-radius: var(--radius-full);
+  border-radius: 50%;
   border: 3px solid var(--brand-primary);
   animation: fabPulse 2.2s ease-out infinite;
   z-index: 1;

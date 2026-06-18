@@ -85,10 +85,20 @@
 .stepItem[data-state='done'] .stepLabel { color: var(--text-secondary); }
 .stepItem[data-state='done'] .stepBar { background: color-mix(in srgb, var(--success) 55%, var(--border-light)); }
 
-@media (max-width: 420px) {
-  .stepLabel { font-size: 0.74rem; }
-  .stepBar { margin: 0 0.35rem; }
-  .stepDot { width: 30px; height: 30px; }
+@media (max-width: 560px) {
+  .stepper { margin-bottom: 1.15rem; overflow: hidden; }
+  .stepItem { gap: 0.4rem; }
+  .stepDot { width: 28px; height: 28px; }
+  .stepDot svg { width: 15px; height: 15px; }
+  .stepLabel { font-size: 0.72rem; }
+  .stepBar { margin: 0 0.3rem; min-width: 8px; }
+}
+@media (max-width: 380px) {
+  .stepItem { gap: 0.3rem; }
+  .stepDot { width: 26px; height: 26px; }
+  .stepDot svg { width: 14px; height: 14px; }
+  .stepLabel { font-size: 0.64rem; letter-spacing: -0.01em; }
+  .stepBar { margin: 0 0.18rem; }
 }
 
 /* ===================== LAYOUT ===================== */

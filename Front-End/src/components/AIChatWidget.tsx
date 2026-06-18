@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { usePathname } from 'next/navigation';
 import { MessageCircle, X, Send, Copy, Check, RotateCcw } from 'lucide-react';
 import { apiClient } from '@/lib/apiClient';
 import { useLanguage } from '@/context/LanguageContext';
@@ -123,6 +124,9 @@ export default function AIChatWidget() {
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const fabRef = useRef<HTMLButtonElement>(null);
 
+  const pathname = usePathname();
+  const onCart = pathname === '/cart';
+
   const greeting = useCallback((): Msg => ({ role: 'assistant', content: t('ai_greeting'), ts: Date.now() }), [t]);
 
   // Hydrate session once (decoupled from lang → switching language keeps history)
@@ -244,7 +248,7 @@ export default function AIChatWidget() {
 
   if (!open) {
     return (
-      <button ref={fabRef} className={styles.fab} onClick={() => setOpen(true)} title={t('ai_title')} aria-label={t('ai_title')}>
+      <button ref={fabRef} className={`${styles.fab} ${onCart ? styles.fabAboveBar : ''}`} onClick={() => setOpen(true)} title={t('ai_title')} aria-label={t('ai_title')}>
         <MessageCircle size={28} className={styles.fabIcon} />
         <span className={styles.pulseRing} aria-hidden="true"></span>
       </button>
